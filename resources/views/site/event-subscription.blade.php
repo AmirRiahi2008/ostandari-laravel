@@ -1,4 +1,4 @@
-<details class="portal-event-subscription" @if(request()->boolean('unsubscribe'))open @endif x-data="eventSubscription(@js($county['slug'] ?? ''),{{ request()->boolean('unsubscribe')?'true':'false' }})">
+<details class="portal-event-subscription" @click.outside="$el.open=false" @keydown.escape.prevent="$el.open=false;$el.querySelector('summary').focus()" @if(request()->boolean('unsubscribe'))open @endif x-data="eventSubscription(@js($county['slug'] ?? ''),{{ request()->boolean('unsubscribe')?'true':'false' }})">
     <summary>خبرم کن <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></summary>
     <form @submit.prevent="submit()" class="portal-event-form">
         <h3 x-text="unsubscribe?'لغو عضویت پیامکی':'اطلاع‌رسانی پیامکی رویدادها'">اطلاع‌رسانی پیامکی رویدادها</h3>

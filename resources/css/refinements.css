@@ -187,7 +187,7 @@
 [data-section='site'] [data-alpine-header][data-portal-ui] .portal-county-banner{position:relative;min-height:0!important;aspect-ratio:1380/180;overflow:hidden}
 [data-section='site'] [data-alpine-header][data-portal-ui] .portal-county-banner>svg{position:absolute;inset:0;width:100%;height:100%;transform:none}
 .portal-county-banner-title{position:absolute;inset:0 29.7% 0 30.4%;display:flex;align-items:center;justify-content:center;padding-bottom:15px;text-align:center;color:white;font-family:'Portal Nastaliq',serif;font-size:clamp(10px,var(--county-title-size,3.2vw),47px);font-weight:400;line-height:2;white-space:nowrap;text-shadow:0 2px 3px #122f60}
-[data-section='site'] [data-alpine-header][data-portal-ui] .shoar-sal{inset:50% auto auto 1.8%;width:25%;height:79%;transform:translateY(-50%);margin:0}
+[data-section='site'] [data-alpine-header][data-portal-ui] .shoar-sal{inset:50% auto auto 1.8%;width:22%;height:79%;transform:translateY(-50%);margin:0}
 [data-section='site'] [data-alpine-header][data-portal-ui] .shoar-sal img{width:100%;height:100%;object-fit:contain;transform:none}
 /* Explicit SVG carousel arrows work without the optional Swiper icon font. */
 .portal-carousel{position:relative;overflow:hidden}
@@ -357,3 +357,5 @@
 .portal-auth-refresh .portal-auth-form label.portal-registration-consent{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:start;gap:10px;padding:13px;border:1px solid #d6e5e9;border-radius:11px;background:#f0f8f8;font-size:11px;font-weight:450;line-height:2}
 .portal-auth-refresh .portal-registration-consent input[type=checkbox]{width:18px;height:18px;min-height:18px;padding:0;margin:3px 0 0;accent-color:#078d93;appearance:auto}
 @media(max-width:800px){.portal-auth-refresh .portal-registration-layout{grid-template-columns:1fr;grid-template-rows:auto;grid-template-areas:'fields' 'terms' 'consent' 'submit'}}
+
+.portal-events-home:has(.portal-event-subscription[open]){z-index:4}

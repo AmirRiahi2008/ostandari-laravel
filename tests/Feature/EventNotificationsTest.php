@@ -139,6 +139,9 @@ final class EventNotificationsTest extends TestCase
     {
         $admin = User::where('username', 'admin')->firstOrFail();
         $hash = $admin->password;
+        \Illuminate\Support\Facades\Schema::drop('event_deliveries');
+        \Illuminate\Support\Facades\Schema::drop('event_subscriptions');
+        DB::table('migrations')->where('migration', '2026_10_25_000001_create_event_alert_tables')->delete();
         $this->artisan('portal:prepare-events')->assertSuccessful();
         $this->artisan('portal:prepare-events')->assertSuccessful();
         $this->assertSame($hash, $admin->fresh()->password);
