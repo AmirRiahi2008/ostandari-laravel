@@ -43,6 +43,7 @@ final class ResourceRegistry
             'filters' => ['type', 'category_id', 'organization_id', 'status', 'locale', 'is_featured'], 'with' => ['cover', 'category', 'tags', 'media', 'author'],
             'rules' => ['type' => ['required', Rule::in(config('portal.content_types'))], 'locale' => $locale, 'organization_id' => $org, 'category_id' => $category,
                 'cover_media_id' => $image, 'title' => $text, 'slug' => $optional, 'subtitle' => $optional, 'excerpt' => ['nullable', 'string', 'max:4000'],
+                'news_scope' => ['nullable', Rule::in(array_keys(NewsFeeds::LABELS))],
                 'body' => ['required', 'string', 'max:1000000'], 'metadata' => ['nullable', 'array', 'max:30'], 'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
                 'is_featured' => $flag, 'show_in_slideshow' => $flag, 'comments_enabled' => $flag, 'priority' => $priority, 'published_at' => $date, 'expires_at' => $date,
                 'tag_ids' => ['sometimes', 'array', 'max:30'], 'tag_ids.*' => ['integer', 'distinct', Rule::exists('tags', 'id')->whereNull('deleted_at')],

@@ -4,6 +4,11 @@ namespace App\Services;
 
 class Html
 {
+    public static function articleBody(string $html): string
+    {
+        return preg_replace('~<p(?:\\s[^>]*)?>(?:\\s|\\x{00a0}|&nbsp;|<br\\s*/?>)*</p>~ui', '', self::clean($html));
+    }
+
     public static function clean(string $html): string
     {
         $config = \HTMLPurifier_Config::createDefault();

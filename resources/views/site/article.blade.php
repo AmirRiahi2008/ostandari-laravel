@@ -20,7 +20,7 @@
         </header>
         @if(!empty($content['excerpt']))<p class="portal-article-summary">{{ $ui->text($content['excerpt']) }}</p>@endif
         @if($image)<figure class="portal-article-cover"><img src="{{ $image }}" alt="{{ $content['title'] }}" fetchpriority="high"></figure>@endif
-        <div class="portal-article-body portal-rich-text">{!! \App\Services\Html::clean($content['body'] ?? '') !!}</div>
+        <div class="portal-article-body portal-rich-text">{!! \App\Services\Html::articleBody($content['body'] ?? '') !!}</div>
     </article>
     @if(!empty($related))
         <section class="portal-related-content portal-related-cards" aria-labelledby="related-title">

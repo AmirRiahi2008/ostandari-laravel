@@ -20,12 +20,12 @@
         </div>
     </div>
     <div class="imageeee {{ $county ? 'county-portal-banner' : '' }}">
-        @if($county && !$ui->image($organization['banner'] ?? null))
-        <div class="county-banner-template" role="img" aria-label="{{ $portalName }}"><svg viewBox="0 0 1380 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="county-banner-pattern-{{ $county['slug'] }}" width="350" height="180" patternUnits="userSpaceOnUse"><image href="/design/site/assets/image/amol.png" width="1380" height="180" /></pattern></defs><image href="/design/site/assets/image/amol.png" width="1380" height="180"/><rect x="420" width="540" height="180" fill="url(#county-banner-pattern-{{ $county['slug'] }})" /></svg><div class="county-banner-name"><span>{{ $county['slug']==='amol' ? 'فرمانداری ویژه شهرستان' : 'فرمانداری شهرستان' }}</span><strong>{{ $county['name'] }}</strong></div></div>
+        @if($county)
+            @include('partials.county-banner')
         @else
-        <img class="icx-responsive-img" src="{{ $ui->image($county ? ($organization['banner'] ?? null) : ($settings['site.banner'] ?? null)) ?? '/design/site/assets/image/baner.png' }}" width="1380" height="180" alt="{{ $portalName }}" fetchpriority="high">
+            <img class="icx-responsive-img" src="{{ $ui->image($settings['site.banner'] ?? null) ?? '/design/site/assets/image/baner.png' }}" width="1380" height="180" alt="{{ $portalName }}" fetchpriority="high">
         @endif
-        <div class="shoar-sal"><img src="{{ $ui->image($settings['site.slogan'] ?? null) ?? '/design/site/assets/image/شعار پ.png' }}" alt="شعار سال"></div>
+        <div class="shoar-sal"><img src="{{ $ui->image($settings['site.slogan'] ?? null) ?? '/design/county-banners/annual-slogan.png' }}" alt="شعار سال"></div>
     </div>
     <div class="top-header"><div class="header-box" :data-mega-open="mega ? 'true' : null">
         <button type="button" class="header-hamburger" id="hamburgerBtn" aria-label="باز کردن فهرست سایت" :aria-expanded="mobile" aria-controls="mobileMenu" @click="mobile=true"><span></span><span></span><span></span></button>

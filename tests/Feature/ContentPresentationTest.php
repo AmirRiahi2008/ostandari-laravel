@@ -21,7 +21,7 @@ final class ContentPresentationTest extends TestCase
     {
         $admin = User::where('username', 'admin')->firstOrFail();
         return Content::create(['type' => $type, 'title' => 'مطلب آزمایشی '.$type,
-            'slug' => 'presentation-'.$type, 'body' => '<p>متن کامل مطلب</p><img src="/storage/test/photo.webp" alt="تصویر متن">',
+            'slug' => 'presentation-'.$type, 'body' => '<p>متن کامل مطلب</p><p>&nbsp;</p><p><br></p><img src="/storage/test/photo.webp" alt="تصویر متن">',
             'locale' => 'fa', 'organization_id' => $admin->organization_id, 'author_id' => $admin->id,
             'comments_enabled' => true, 'status' => 'published', 'published_at' => now()->subMinute()]);
     }
@@ -37,6 +37,7 @@ final class ContentPresentationTest extends TestCase
             $article->media()->attach($media->id, ['purpose' => 'attachment']);
             $this->get('/content/'.$article->id)->assertOk()->assertSee('متن کامل مطلب')
                 ->assertSee('/storage/test/photo.webp', false)->assertDontSee('پیوست‌ها')
+                ->assertDontSee('<p>&nbsp;</p>', false)->assertDontSee('<p><br /></p>', false)
                 ->assertSee('کپی لینک')->assertSee('اشتراک‌گذاری');
             $this->assertTrue($article->fresh()->media()->whereKey($media->id)->exists());
         }

@@ -5,34 +5,8 @@
 </section>
 <div class="sections-container">
 <section class="home-counties" aria-label="فرمانداری‌های مازندران" data-home-reveal="true">@include('site.county-map')</section>
-<section class="home-information" aria-label="مصوبات و پیوندهای مفید" data-home-reveal="true">
-<div class="container-peyvand">
-<div class="mz-portal-wrapper">
-<div class="mz-portal-news">
-<h2 class="mz-portal-title">مصوبات و اطلاعیه‌ها</h2>
-<p class="mz-portal-subtitle">آخرین مصوبات و اطلاعیه‌های سازمان را مطالعه کنید.</p>
-<ul class="mz-news-list" id="mzNewsList">@forelse(array_slice([...($home['announcements'] ?? []),...($home['resolutions'] ?? [])],0,6) as $item)<li class="mz-news-item">
-<div>@include('icons.document')</div>
-<div>
-<time class="mz-news-date">{{ $ui->date($item['published_at'] ?? null) }}</time>
-<p>
-<a href="{{ $ui->article($item,$county) }}">{{ $item['title'] }}</a>
-</p>
-</div>
-</li>@empty<li class="source-empty">مطلبی در این بخش منتشر نشده است.</li>@endforelse</ul>
-<a class="source-more" href="{{ $ui->href('/regulations',$county) }}">مشاهدهٔ همهٔ اسناد <span aria-hidden="true">←</span>
-</a>
-</div>
-<div class="mz-portal-links">
-<h2 class="mz-portal-title">پیوندهای مفید</h2>
-<p class="mz-portal-subtitle">پیوندهای مفید سازمان را اینجا مطالعه کنید.</p>
-<div class="mz-links-grid">@php($useful=!empty($home['links'])?$home['links']:collect($ui->data('official-site')['pages'])->whereIn('id',$ui->data('official-site')['useful'])->all())@foreach(array_slice($useful,0,14) as $item)<a class="mz-link-btn" href="{{ $ui->href($item['url'] ?? $item['href'] ?? '/links',$county) }}">
-<span>{{ $item['title'] }}</span>
-<span class="home-link-arrow" aria-hidden="true">↖</span>
-</a>@endforeach</div>
-</div>
-</div>
-</div>
+<section class="home-information" aria-label="اخبار و پیوندهای مفید" data-home-reveal="true">
+<div class="container-peyvand"><div class="portal-home-information">@include('site.news-tabs')@include('site.useful-links')</div></div>
 </section>
 <section class="home-managers" aria-labelledby="home-managers-title" data-home-reveal="true">
 <div class="container-modiran">

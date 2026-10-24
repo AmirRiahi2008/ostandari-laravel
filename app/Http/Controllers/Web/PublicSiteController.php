@@ -37,7 +37,7 @@ final class PublicSiteController
         $section = $ui->section($path);
         $template = collect($meta['templates'])->first(fn($p)=>$p['group']==='site' && $p['path']===$path);
         $extra = ['/services','/services/provincial','/links','/gallery','/forms','/forum','/governors','/deputies','/transparency','/governorate','/duties','/sitemap','/sitemap.xml','/rss','/about/general','/districts','/units','/accessibility','/performance','/participation','/service-agreement/statement','/polls/site','/announcements','/resolutions','/documents','/password','/verify'];
-        $dynamic = preg_match('~^/(news|content|service|forms|forum)/([^/]+)$~', $path, $match);
+        $dynamic = preg_match('~^/(news|content|duties|service|forms|forum)/([^/]+)$~', $path, $match);
         abort_unless($path==='/' || isset($meta['publicTitles'][$path]) || $section || $template || $dynamic || in_array($path, $extra, true) || in_array($path, ['/en','/ar'], true), 404);
         $title = $county && $path==='/' ? 'فرمانداری شهرستان '.$county['name'] : ($meta['publicTitles'][$path] ?? $section['title'] ?? 'پرتال استانداری مازندران');
         $page = ($county ? collect($meta['templates'])->firstWhere('path','/county') : $template) ?? collect($meta['templates'])->firstWhere('path','/') ?? [];
@@ -64,15 +64,16 @@ final class PublicSiteController
             $data['view']=$county?'county-home':'home';
         } elseif($county && $path==='/about') {
             $data['view']='county-home';
-        } elseif ($dynamic && in_array($match[1], ['content','news'],true)) {
+        } elseif ($dynamic && in_array($match[1], ['content','news','duties'],true)) {
             try {
-                $payload = ctype_digit($match[2]) ? $public->content($r, (int)$match[2])->getData(true)['data'] : $public->contentSlug($r,'news',$match[2])->getData(true)['data'];
+                $payload = ctype_digit($match[2]) ? $public->content($r, (int)$match[2])->getData(true)['data'] : $public->contentSlug($r,$match[1]==='duties'?'duty':'news',$match[2])->getData(true)['data'];
             } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
                 $snapshot = config('website.snapshot') ? collect($ui->data('official-site')['news'])->firstWhere('slug',$match[2]) : null;
                 if (!$snapshot) throw $e;
                 $payload = ['content'=>[...$snapshot,'id'=>$snapshot['slug'],'body'=>'<p>'.e($snapshot['excerpt'] ?? '').'</p>'],'related'=>[],'comments'=>[]];
             }
             abort_if($county && ($payload['content']['organization_id'] ?? null) !== $organization?->id, 404);
+            abort_if($match[1]==='duties' && ($payload['content']['type'] ?? '')!=='duty',404);
             $data += $payload;
             $data['title']=$payload['content']['title'];$data['view']='article';
         } elseif ($section && ($section['kind'] ?? '')==='article') {
@@ -83,7 +84,7 @@ final class PublicSiteController
             $kind=$section['kind'] ?? '';
             if (isset($types[$path]) || in_array($kind,['news','documents','tenders'],true)) {
                 $result=$public->contents($r,$types[$path] ?? ['news'=>'news','documents'=>'document','tenders'=>'tender'][$kind])->getData(true);
-                $data['items']=$county&&!$organization ? [] : $result['data'];$data['meta']=$result['meta'];$data['view']='collection';
+                $data['items']=$county&&!$organization ? [] : $result['data'];$data['meta']=$result['meta'];$data['view']=$path==='/duties'?'duties':'collection';
             } elseif (in_array($path,['/managers','/governors','/deputies'],true) || in_array($kind,['managers','governors'],true)) {
                 $group=(string)($section['group'] ?? $request->query('group','1'));
                 $memberKind=$path==='/governors'||$kind==='governors'?'governor':($group==='4'?'county_governor':($group==='6'?'advisor':'manager'));
@@ -99,6 +100,7 @@ final class PublicSiteController
                 $data['items']=$county&&!$organization?[]:($id?[$public->catalogShow($r,$id,$resource)->getData(true)['data']]:$public->catalog($r->duplicate([...$query,'per_page'=>100]),$resource)->getData(true)['data']);
                 if ($county) $data['items']=array_values(array_filter($data['items'],fn($x)=>!isset($x['organization_id'])||$x['organization_id']===$organization?->id));
                 $data['resource']=$resource;$data['view']='catalog';
+                if ($resource==='links') $data['items']=$ui->usefulLinks($data['items']);
             } elseif ($path==='/transparency' || ($section['id']??null)==='menu-195') {
                 $data['view']='transparency';$data['transparent']=['tender'=>$public->contents($r,'tender')->getData(true)['data'],'contract'=>$public->contents($r,'contract')->getData(true)['data']];
             } elseif ($path==='/search') {

@@ -118,3 +118,110 @@
  .portal-archive-search input{flex-basis:170px}
  .portal-comments{padding:22px 17px}
 }
+.portal-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+/* Home feeds and useful links share a compact two-column section. */
+.source-home .home-experience .home-information .container-peyvand{height:auto!important;min-height:0;display:block;width:92%;margin-inline:auto;padding:0;background:none;box-shadow:none}
+.portal-home-information{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:stretch}
+.portal-news-feeds,.portal-useful-panel{display:flex;flex-direction:column;gap:18px;min-width:0;padding:24px;border:1px solid #dce7ef;border-radius:19px;background:white;box-shadow:0 5px 22px #153b5c08}
+.portal-feed-tabs{display:flex;align-items:stretch;gap:4px;padding:4px;border:1px solid #e6edf3;border-radius:11px;background:#f1f6f9;overflow-x:auto}
+.portal-feed-tabs>button{flex:1;min-width:max-content;border:0;padding:10px 8px;background:none;color:#5b7486;border-radius:8px;font:inherit;font-size:10px;font-weight:650;line-height:1.8;cursor:pointer}
+.portal-feed-tabs>button[aria-selected=true]{background:white;color:#075479;box-shadow:0 2px 7px #113d6215}
+.portal-feed-list{display:grid;gap:12px}
+.portal-feed-list .portal-content-card-link{display:grid;grid-template-columns:108px minmax(0,1fr);min-height:110px}
+.portal-feed-list .portal-content-card-image{aspect-ratio:auto;height:100%;min-height:110px}
+.portal-feed-list .portal-content-card-copy{padding:11px 13px;gap:6px}
+.portal-feed-list .portal-content-card h3{font-size:12px}
+.portal-feed-list .portal-content-card-meta{font-size:9px}
+.portal-feed-list .portal-content-card-copy>p{font-size:10px;min-height:0;line-height:1.9}
+.portal-feed-list .portal-content-card-more{display:none}
+.portal-feed-list .portal-content-card.without-photo .portal-content-card-link{grid-template-columns:minmax(0,1fr)}
+.portal-feed-more{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:13px;border-top:1px solid #e5edf3;color:#0c657c;font-size:12px;text-decoration:none}
+.portal-feed-empty{grid-column:1/-1;margin:0;padding:25px 15px;border:1px dashed #d8e4ec;border-radius:11px;background:#f8fbfd;text-align:center;font-size:12px;line-height:1.9;color:#6d8392}
+.portal-useful-panel>header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:2px}
+.portal-useful-panel h2{margin:0;font-size:21px;line-height:1.8;font-weight:750;color:#174969}
+.portal-useful-panel>header>a{font-size:11px;color:#0a8588;text-decoration:none}
+.portal-useful-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.portal-useful-link{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e3ebf1;border-radius:11px;background:#f9fcfe;color:#285572;text-decoration:none;min-width:0;font-size:11px;line-height:1.8}
+.portal-useful-link:hover{background:#eff8fa;border-color:#a6cfd7}
+.portal-useful-link>span:not(.portal-link-symbol){flex:1;min-width:0}
+.portal-useful-link>span:last-child{flex:0;color:#819aaa}
+.portal-link-symbol{display:flex;align-items:center;justify-content:center;flex:0 0 33px;width:33px;height:33px;border-radius:9px;background:#e9f2f6;color:#11868f}
+.portal-link-symbol>svg,.portal-link-symbol>img{width:22px;height:22px;object-fit:contain}
+.portal-links-directory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-block:18px 35px}
+.portal-links-directory .portal-useful-link{min-height:100px;padding:20px}
+.portal-links-directory h2{flex:1;min-width:0;margin:0;font-size:14px;font-weight:650;line-height:1.9}
+.portal-duties-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-block:18px 35px}
+.portal-duty-item{display:flex;flex-direction:column;gap:18px;min-width:0;padding:25px;border:1px solid #dce7ef;border-radius:18px;background:white;box-shadow:0 5px 20px #153b5c09}
+.portal-duty-symbol{display:flex;align-items:center;justify-content:center;width:49px;height:49px;border-radius:14px;background:#edf6f8;color:#108a8b}
+.portal-duty-symbol>svg{width:26px;height:26px}
+.portal-duty-item h2{margin:0;color:#194b6b;font-size:17px;line-height:1.9;font-weight:750}
+.portal-duty-item h2 a{text-decoration:none;color:inherit}
+.portal-duty-item>p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0;color:#6b8191;font-size:12px;line-height:2}
+.portal-duty-read{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:auto;padding-top:16px;border-top:1px solid #e6edf3;color:#12667b;font-size:12px;text-decoration:none}
+/* Put the county picker above the map without retaining the legacy fixed heights. */
+.source-home .home-experience .portal-map-panel{width:92%;margin-inline:auto;padding:22px 25px;border:1px solid #dce7ef;border-radius:20px;background:#fff;box-shadow:0 5px 22px #153b5c08}
+.portal-map-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:15px}
+.portal-map-heading h2{margin:0;font-size:21px;font-weight:750;line-height:1.9;color:#174969}
+.portal-map-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.portal-map-picker label{font-size:11px;color:#6b8293}
+.portal-map-picker select{padding:8px 12px;min-width:145px;min-height:40px;border:1px solid #ccdce7;border-radius:9px;background:#f7fbfd;color:#275773;font:inherit;font-size:12px}
+.portal-map-picker .portal-button{padding:8px 14px;font-size:11px;min-height:40px;border-radius:9px;line-height:1.8;margin:0}
+.portal-map-content{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:center;direction:ltr}
+.portal-map-content>*{direction:rtl;min-width:0}
+.portal-map-preview{overflow:hidden;border:1px solid #dce7ef;border-radius:13px;background:#f5f9fc}
+.portal-map-preview>a{display:block;aspect-ratio:3/2}
+.portal-map-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.portal-map-preview>strong{display:block;padding:12px 15px;color:#285572;font-size:13px;font-weight:650}
+.portal-map-panel .portal-map-viewport{overflow-x:auto;min-width:0;width:100%}
+.portal-map-panel svg{display:block;width:100%;min-width:560px;height:260px;overflow:visible}
+.portal-map-panel .county-region path{fill:#e5eef5;stroke:#99b6cd;stroke-width:.8;transition:fill .18s}
+.portal-map-panel .county-region.is-selected path,.portal-map-panel .county-region:hover path{fill:#91cdd0;stroke:#0c8b92}
+.portal-map-panel .county-region:focus{outline:none}
+.portal-map-panel .county-region:focus-visible path{fill:#b8dfdf;stroke:#087e89;stroke-width:2}
+.portal-map-panel text{fill:#214d6e;stroke:#fff;stroke-width:3;paint-order:stroke;font-size:13px;font-weight:700;cursor:pointer}
+.portal-map-directory{margin-top:10px;color:#718694;font-size:11px}
+.portal-map-directory summary{cursor:pointer;width:max-content}
+.portal-map-directory>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.portal-map-directory a{padding:5px 9px;border:1px solid #dce7ef;border-radius:7px;color:#285572;text-decoration:none}
+/* The uploaded county artwork and the independent annual emblem share one frame. */
+[data-section='site'] [data-alpine-header][data-portal-ui] .portal-county-banner{position:relative;min-height:0!important;aspect-ratio:1380/180;overflow:hidden}
+[data-section='site'] [data-alpine-header][data-portal-ui] .portal-county-banner>svg{position:absolute;inset:0;width:100%;height:100%;transform:none}
+.portal-county-banner-title{position:absolute;inset:0 29.7% 0 30.4%;display:flex;align-items:center;justify-content:center;padding-bottom:15px;text-align:center;color:white;font-family:'Portal Nastaliq',serif;font-size:clamp(10px,var(--county-title-size,3.2vw),47px);font-weight:400;line-height:2;white-space:nowrap;text-shadow:0 2px 3px #122f60}
+[data-section='site'] [data-alpine-header][data-portal-ui] .shoar-sal{inset:50% auto auto 1.8%;width:25%;height:79%;transform:translateY(-50%);margin:0}
+[data-section='site'] [data-alpine-header][data-portal-ui] .shoar-sal img{width:100%;height:100%;object-fit:contain;transform:none}
+/* Explicit SVG carousel arrows work without the optional Swiper icon font. */
+.portal-carousel{position:relative;overflow:hidden}
+.portal-carousel-arrow{position:absolute;top:50%;z-index:6;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #ffffff9c;border-radius:50%;padding:8px;background:#fffffff2;color:#125378;box-shadow:0 3px 12px #05263d30;transform:translateY(-50%);cursor:pointer}
+.portal-carousel-arrow.is-previous{right:12px}.portal-carousel-arrow.is-next{left:12px}
+.portal-carousel-arrow>svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.portal-carousel-arrow:disabled{opacity:.4;cursor:default}
+.portal-county-intro{display:grid;grid-template-columns:minmax(0,1fr);gap:23px;margin-block:10px 25px}
+.portal-county-intro.with-governor{grid-template-columns:minmax(0,1fr) 280px}
+.portal-county-intro .county-home-slideshow{min-width:0;min-height:350px;margin:0}
+.portal-county-intro .portal-carousel{width:100%;height:100%;min-height:350px;border-radius:18px;background:radial-gradient(ellipse at 35% 10%,#16698a,transparent 70%),#113c65}
+.portal-county-intro .swiper-wrapper,.portal-county-intro .swiper-slide,.portal-county-intro .source-slide-link{height:100%;min-height:350px}
+.portal-county-intro .source-slide-link{display:flex;align-items:center;justify-content:center;max-height:480px}
+.portal-county-intro .portal-county-photo{width:min(100%,660px);max-height:440px;aspect-ratio:3/2;margin:0 auto;overflow:hidden;border-radius:0}
+.portal-county-intro .portal-county-photo>img{display:block;width:100%;height:100%;object-fit:contain}
+[data-section='site'] .portal-county-home .portal-county-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;max-height:none;overflow:visible;padding:0}
+.portal-county-home .portal-content-card h3{font-size:13px}
+@media(max-width:1000px){.portal-home-information{grid-template-columns:minmax(0,1fr)}.portal-map-content{grid-template-columns:190px minmax(0,1fr);gap:16px}.portal-links-directory,.portal-duties-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-county-intro.with-governor{grid-template-columns:minmax(0,1fr) 240px}}
+@media(max-width:640px){
+ .portal-news-feeds,.portal-useful-panel{padding:18px;border-radius:15px}
+ .portal-feed-list .portal-content-card-link{grid-template-columns:90px minmax(0,1fr)}
+ .portal-feed-list .portal-content-card-copy{padding:10px}
+ .portal-map-panel .portal-map-heading{align-items:flex-start}
+ .portal-map-picker label{display:none}
+ .portal-map-picker select{min-width:120px}
+ .source-home .home-experience .portal-map-panel{padding:18px}
+ .portal-map-content{grid-template-columns:minmax(0,1fr)}
+ .portal-map-preview{display:none}
+ .portal-map-panel svg{height:260px}
+ .portal-links-directory,.portal-duties-grid{grid-template-columns:minmax(0,1fr)}
+ .portal-useful-link{padding:10px;gap:7px;font-size:10px}
+ .portal-county-banner-title{font-size:clamp(7px,var(--county-title-size,3.2vw),20px);padding-bottom:5px}
+ .portal-county-intro.with-governor{grid-template-columns:minmax(0,1fr)}
+ .portal-county-intro .county-home-slideshow,.portal-county-intro .portal-carousel,.portal-county-intro .swiper-slide,.portal-county-intro .source-slide-link{min-height:240px}
+ [data-section='site'] .portal-county-home .portal-county-card-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:1280px){[data-section='site'] [data-alpine-header][data-portal-ui] .hum-logo{position:relative;top:3px}[data-section='site'] [data-alpine-header][data-portal-ui] .header-paen .marquee{mask-image:linear-gradient(to right,transparent 130px,#000 130px)}}

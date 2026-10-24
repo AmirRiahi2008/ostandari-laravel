@@ -6,6 +6,13 @@ class Content extends PortalModel
 {
     use HasMedia;
 
+    protected $appends = ['news_scope'];
+
+    public function getNewsScopeAttribute(): ?string
+    {
+        return $this->metadata['news_scope'] ?? null;
+    }
+
     protected function casts(): array
     {
         return parent::casts() + ['show_in_slideshow' => 'boolean'];

@@ -37,6 +37,14 @@ final class PortalView
         return '/'.$county['slug'].($path === '/' ? '' : $path);
     }
 
+    public function usefulLinks(array $items = []): array
+    {
+        $links = array_values(array_filter($items, fn ($item) => in_array($item['position'] ?? 'useful', ['useful', 'quick'], true)));
+        if ($links) return $links;
+        $source = $this->data('official-site');
+        return array_values(array_filter($source['pages'], fn ($item) => in_array($item['id'], $source['useful'], true)));
+    }
+
     public function image(mixed $record): ?string
     {
         if (is_array($record)) {
@@ -73,7 +81,7 @@ final class PortalView
 
     public function article(array $record, ?array $county = null): string
     {
-        return $this->href('/content/'.rawurlencode((string) $record['id']), $county);
+        return $this->href((($record['type'] ?? null)==='duty' ? '/duties/' : '/content/').rawurlencode((string) $record['id']), $county);
     }
 
     public function countyTitle(string $title, ?array $county): string

@@ -154,6 +154,13 @@ class ResourcePayload
             }
         }
         if ($sample instanceof Content) {
+            if (array_key_exists('news_scope', $data)) {
+                if (($effective['type'] ?? '') !== 'news' && $data['news_scope'] !== null && $data['news_scope'] !== '') {
+                    throw ValidationException::withMessages(['news_scope' => 'گروه اخبار فقط برای خبر قابل انتخاب است.']);
+                }
+                $data['metadata'] = array_replace($model?->metadata ?? [], $data['metadata'] ?? [], ['news_scope' => $data['news_scope'] ?: null]);
+                unset($data['news_scope']);
+            }
             if (! empty($effective['show_in_slideshow']) && empty($effective['cover_media_id'])) {
                 throw ValidationException::withMessages(['cover_media_id' => 'برای نمایش این مطلب در اسلایدشو، تصویر شاخص را بارگذاری کنید یا تیک نمایش در اسلایدشو را بردارید.']);
             }

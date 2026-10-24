@@ -57,6 +57,7 @@ class PublicController
             'organization' => $org, 'settings' => Setting::where('is_public', true)->whereIn('key', config('portal.public_settings'))->pluck('value', 'key'),
             'menus' => $this->menuData($locale, null, $org?->id), 'slides' => $slides->toBase()->concat($promoted)->values(),
             'advertisements' => Slide::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->inWindow()->where('kind', 'advertisement')->where('locale', $locale)->with('image')->orderBy('priority')->get(),
+            'news_feeds' => \App\Services\NewsFeeds::home($locale, $slug ? $org?->id : null),
             'news' => $contents()->where('type', 'news')->orderByDesc('is_featured')->orderBy('priority')->latest('published_at')->limit(10)->get(),
             'announcements' => $contents()->where('type', 'announcement')->latest('published_at')->limit(6)->get(),
             'resolutions' => $contents()->where('type', 'resolution')->latest('published_at')->limit(6)->get(),
@@ -91,11 +92,15 @@ class PublicController
 
     public function contents(Request $r, ?string $type = null)
     {
-        $r->validate(['type' => ['sometimes', Rule::in(config('portal.content_types'))], 'q' => 'sometimes|string|max:200', 'per_page' => 'sometimes|integer|min:1|max:100', 'category_id' => 'sometimes|integer', 'organization_id' => 'sometimes|integer', 'tag_id' => 'sometimes|integer']);
+        $r->validate(['type' => ['sometimes', Rule::in(config('portal.content_types'))], 'q' => 'sometimes|string|max:200', 'per_page' => 'sometimes|integer|min:1|max:100', 'category_id' => 'sometimes|integer', 'organization_id' => 'sometimes|integer', 'tag_id' => 'sometimes|integer', 'news_scope' => ['sometimes', Rule::in(array_keys(\App\Services\NewsFeeds::LABELS))]]);
         $q = Content::visible()->where('locale', $this->locale($r))->with('cover', 'category', 'author', 'tags');
-        if (! $r->filled('organization_id')) {
+        if (! $r->filled('organization_id') && !$r->filled('news_scope')) {
             $root = Organization::active()->where('type', 'governorate')->value('id');
             $q->where(fn ($q) => $q->where('organization_id', $root)->orWhereNull('organization_id'));
+        }
+        if ($r->filled('news_scope')) {
+            \App\Services\NewsFeeds::apply($q, $r->string('news_scope')->toString());
+            $q->where(fn ($org) => $org->whereNull('organization_id')->orWhereHas('organization', fn ($organization) => $organization->active()));
         }
         $kind = $type ?? $r->input('type');
         if ($kind) {
