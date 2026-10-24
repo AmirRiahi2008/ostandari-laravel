@@ -18,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \App\Models\Content::saved(fn ($content) => \App\Services\EventAlerts::queue($content));
         if (
             $this->app->environment('production')
             && str_starts_with((string) config('app.url'), 'https://')

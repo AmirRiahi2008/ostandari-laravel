@@ -77,4 +77,4 @@ USER www-data
 
 EXPOSE 80
 
-CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
+CMD ["sh", "/app/scripts/start-vercel.sh"]

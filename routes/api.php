@@ -40,6 +40,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('forum/topics', [CommunityController::class, 'topics']);
     Route::get('forum/topics/{id}', [CommunityController::class, 'topic']);
     Route::post('contact', [TicketController::class, 'contact'])->middleware('throttle:contact');
+    Route::post('events/subscribe', [\App\Http\Controllers\Api\EventSubscriptionController::class, 'request'])->middleware('throttle:contact');
+    Route::post('events/confirm', [\App\Http\Controllers\Api\EventSubscriptionController::class, 'confirm'])->middleware('throttle:auth');
     Route::post('newsletter/subscribe', [CommunityController::class, 'subscribe'])->middleware('throttle:contact');
     Route::post('newsletter/confirm', [CommunityController::class, 'confirm'])->middleware('throttle:auth');
     Route::post('newsletter/unsubscribe', [CommunityController::class, 'unsubscribe'])->middleware('throttle:auth');

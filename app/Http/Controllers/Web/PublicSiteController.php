@@ -84,7 +84,7 @@ final class PublicSiteController
             $kind=$section['kind'] ?? '';
             if (isset($types[$path]) || in_array($kind,['news','documents','tenders'],true)) {
                 $result=$public->contents($r,$types[$path] ?? ['news'=>'news','documents'=>'document','tenders'=>'tender'][$kind])->getData(true);
-                $data['items']=$county&&!$organization ? [] : $result['data'];$data['meta']=$result['meta'];$data['view']=$path==='/duties'?'duties':'collection';
+                $data['items']=$county&&!$organization ? [] : $result['data'];$data['meta']=$result['meta'];$data['view']=$path==='/duties'?'duties':($path==='/events'?'events':'collection');
             } elseif (in_array($path,['/managers','/governors','/deputies'],true) || in_array($kind,['managers','governors'],true)) {
                 $group=(string)($section['group'] ?? $request->query('group','1'));
                 $memberKind=$path==='/governors'||$kind==='governors'?'governor':($group==='4'?'county_governor':($group==='6'?'advisor':'manager'));

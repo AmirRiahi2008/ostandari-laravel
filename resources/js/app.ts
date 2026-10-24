@@ -92,6 +92,23 @@ Alpine.data('apiForm',(endpoint:string,method='POST')=>({
   }
 }));
 
+
+Alpine.data('eventSubscription',(county:string,unsubscribe=false)=>({
+  county,unsubscribe,mobile:'',code:'',challenge:'',devCode:'',consent:false,busy:false,error:'',message:'',
+  async submit(){
+    if(this.busy)return;this.busy=true;this.error='';this.message='';
+    try{
+      if(this.challenge){
+        const result=await post('events/confirm',{challenge_id:this.challenge,code:digits(this.code)});
+        this.message=result.message;this.challenge='';this.code='';this.devCode='';this.consent=false;
+      }else{
+        const result=await post('events/subscribe',{mobile:digits(this.mobile),county:this.county||null,action:this.unsubscribe?'unsubscribe':'subscribe',consent:this.consent});
+        this.challenge=result.data.challenge_id;this.devCode=result.data.dev_code??'';
+      }
+    }catch(e){this.error=e instanceof Error?e.message:'ثبت درخواست انجام نشد.';}finally{this.busy=false;}
+  }
+}));
+
 Alpine.data('annualSlogan',()=>({
   busy:false,error:'',message:'',current:'/design/site/assets/image/شعار پ.png',preview:'',file:null as File|null,
   async init(){try{const result=await api<any>('admin/annual-slogan');this.current=typeof result.data==='string'?result.data:(result.data?.url??this.current);}catch(e){this.error=(e as Error).message;}},

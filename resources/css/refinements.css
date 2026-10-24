@@ -316,3 +316,44 @@
 @media(max-width:1100px){.portal-admin-refresh .portal-icon-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.portal-admin-refresh .county-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){[data-section='admin'].portal-admin-refresh .portal-editor-page .portal-resource-form{grid-template-columns:minmax(0,1fr)}.portal-admin-refresh .county-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.portal-auth-refresh{padding:22px 14px}.portal-auth-refresh .portal-auth-card{padding:26px 21px}.portal-auth-refresh .portal-auth-brand img{width:78px;height:85px}.portal-auth-refresh .portal-auth-card h1{font-size:23px}.portal-admin-refresh .main-content-header{padding:20px 17px 10px}.portal-admin-refresh .portal-editor-heading{padding-inline:17px}.portal-admin-refresh .portal-form-additional-fields{grid-template-columns:1fr}.portal-admin-refresh .portal-icon-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.portal-admin-refresh .county-module-grid{grid-template-columns:1fr}.portal-admin-refresh .county-dashboard{padding:15px}.portal-admin-refresh .portal-admin-header-actions{gap:2px}.portal-admin-refresh .portal-admin-header-actions a{font-size:10px;padding:5px}.portal-admin-refresh .portal-admin-account{max-width:90px;overflow:hidden;text-overflow:ellipsis}}
+
+/* Event notices and the opt-in form remain within the existing portal theme. */
+.portal-events-home{position:relative;padding:26px;margin-block:0 26px;border:1px solid #dfe8ef;border-radius:20px;background:#fff;box-shadow:0 5px 20px #173c5e08}
+.portal-events-home>header,.portal-events-page-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 23px;flex-wrap:wrap}
+.portal-events-home h2,.portal-events-page-heading h2{font-size:21px;line-height:1.9;font-weight:800;color:#123f61;margin:0}
+.portal-events-home>header>div{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.portal-events-home>header a{color:#307489;text-decoration:none;font-size:11px}
+.portal-event-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.portal-events-empty{grid-column:1/-1;padding:20px 0 8px;margin:0;color:#768b9b;font-size:12px}
+.portal-events-page{margin-block:15px 30px}.portal-events-page-heading{padding:20px 23px;border:1px solid #dfe8ef;border-radius:14px;background:white}
+.portal-event-subscription{position:relative;color:#234b65;font-size:12px}
+.portal-event-subscription>summary{display:flex;align-items:center;gap:15px;padding:10px 16px;background:#075b80;border-radius:10px;color:#fff;list-style:none;cursor:pointer;white-space:nowrap;font-size:12px}
+.portal-event-subscription>summary::-webkit-details-marker{display:none}
+.portal-event-subscription>summary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
+.portal-event-form{position:absolute;inset-inline-end:0;top:calc(100% + 10px);z-index:40;display:grid;gap:16px;width:340px;max-width:calc(100vw - 44px);margin:0;padding:23px;border:1px solid #cadde7;border-radius:15px;background:#fff;box-shadow:0 16px 46px #173c5e25;box-sizing:border-box}
+.portal-event-form h3{margin:0;font-size:15px;color:#123f61;font-weight:750}
+.portal-event-form fieldset{display:grid;gap:16px;margin:0;padding:0;border:0;min-width:0}
+.portal-event-form label{display:grid;gap:8px;font-size:12px;color:#325e75}
+.portal-event-form input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;padding:11px 13px;min-height:44px;border:1px solid #ccdae5;border-radius:9px;background:#f9fbfd;font:inherit;color:#234b65}
+.portal-event-form .portal-event-consent{display:flex;align-items:flex-start;gap:9px;font-size:11px;line-height:2}
+.portal-event-consent input{flex:none;width:17px;height:17px;accent-color:#078d93;margin-top:3px}
+.portal-event-form fieldset>button{min-height:43px;border-radius:9px;font-size:12px}
+.portal-event-form p{margin:0;font-size:11px;line-height:2}
+.portal-event-success{color:#087d73;padding:9px 12px;background:#edf8f4;border-radius:8px}
+.portal-event-error{color:#a63c37;padding:9px 12px;background:#fff1f0;border-radius:8px}
+.portal-event-switch{justify-self:start;border:0;padding:0;background:none;font:inherit;font-size:11px;color:#647d8e;cursor:pointer;text-decoration:underline}
+.portal-event-form :focus-visible{outline:3px solid #0a8d9230;outline-offset:2px}
+.portal-carousel .swiper-slide,.portal-carousel .source-slide-link,.portal-county-home .portal-county-photo{background:#16374e}
+@media(max-width:900px){.portal-event-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.portal-events-home{padding:20px}.portal-event-grid{grid-template-columns:1fr}.portal-events-home>header{align-items:flex-start}.portal-events-home>header>div{gap:12px}.portal-events-home h2,.portal-events-page-heading h2{font-size:18px}.portal-event-form{width:300px;padding:18px}}
+/* Named registration grid areas must not create implicit columns on login forms. */
+.portal-auth-refresh .portal-auth-form fieldset:not(.portal-registration-layout){display:flex;flex-direction:column;width:100%;align-items:stretch}
+.portal-auth-refresh .portal-auth-form fieldset:not(.portal-registration-layout)>.portal-registration-fields{grid-area:auto;width:100%}
+.portal-auth-refresh .portal-auth-form fieldset:not(.portal-registration-layout)>button{width:100%}
+.portal-auth-refresh .portal-auth-form label input:not([type=checkbox]){width:100%;max-width:none}
+.portal-auth-refresh .portal-registration-layout{grid-template-areas:'fields terms' 'consent terms' 'submit terms';grid-template-rows:auto auto 1fr}
+.portal-auth-refresh .portal-registration-layout>.portal-auth-challenge{grid-area:fields}
+.portal-auth-refresh .portal-registration-layout>button{grid-area:submit;width:100%;align-self:start}
+.portal-auth-refresh .portal-auth-form label.portal-registration-consent{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:start;gap:10px;padding:13px;border:1px solid #d6e5e9;border-radius:11px;background:#f0f8f8;font-size:11px;font-weight:450;line-height:2}
+.portal-auth-refresh .portal-registration-consent input[type=checkbox]{width:18px;height:18px;min-height:18px;padding:0;margin:3px 0 0;accent-color:#078d93;appearance:auto}
+@media(max-width:800px){.portal-auth-refresh .portal-registration-layout{grid-template-columns:1fr;grid-template-rows:auto;grid-template-areas:'fields' 'terms' 'consent' 'submit'}}

@@ -9,6 +9,7 @@ return [
     'report_categories' => ['waste', 'roads', 'water', 'electricity', 'environment', 'health', 'security', 'other'],
     'otp' => ['driver' => env('OTP_DRIVER', 'log'), 'expose_local' => (bool) env('OTP_EXPOSE_LOCAL', false), 'ttl' => (int) env('OTP_TTL_SECONDS', 120), 'max_attempts' => (int) env('OTP_MAX_ATTEMPTS', 5)],
     'sms' => ['endpoint' => env('SMS_ENDPOINT'), 'token' => env('SMS_TOKEN'), 'sender' => env('SMS_SENDER')],
+    'events' => ['driver' => env('EVENT_SMS_DRIVER', env('OTP_DRIVER', 'log'))],
     'upload_max_kb' => (int) env('UPLOAD_MAX_KB', 20480),
     'images' => [
         'quality' => (int) env('UPLOAD_IMAGE_QUALITY', 84),

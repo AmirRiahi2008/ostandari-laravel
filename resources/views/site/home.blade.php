@@ -8,6 +8,7 @@
 <section class="home-information" aria-label="اخبار و پیوندهای مفید" data-home-reveal="true">
 <div class="container-peyvand"><div class="portal-home-information">@include('site.news-tabs')@include('site.useful-links')</div></div>
 </section>
+@include('site.events-home')
 <section class="home-managers" aria-labelledby="home-managers-title" data-home-reveal="true">
 <div class="container-modiran">
 <div class="home-section-heading">
