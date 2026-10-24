@@ -1,5 +1,10 @@
-@if(collect($branch['children'] ?? [])->contains(fn($child)=>!empty($child['children'])))
-<div class="nested-mega" x-data="{selected:0}"><ul class="nested-categories">@foreach($branch['children'] as $j=>$child)<li :class="{'active':selected==={{ $j }}}" @mouseenter="selected={{ $j }}"><button type="button" @click="selected={{ $j }}" @focus="selected={{ $j }}" :aria-expanded="selected==={{ $j }}"><span class="category-text">{{ $child['title'] }}</span>@include('icons.arrow')</button></li>@endforeach</ul><div class="nested-submenus">@foreach($branch['children'] as $j=>$child)<div class="nested-submenu" :class="{'active':selected==={{ $j }}}" x-show="selected==={{ $j }}"><div class="submenu-grid">@foreach([$branch,$child,...($child['children'] ?? [])] as $link)<a class="submenu-item" href="{{ $link['href'] }}"><span class="gerd"></span><span class="submenu-text">{{ $link['title'] }}</span></a>@endforeach</div></div>@endforeach</div></div>
-@else
-<div class="submenu-grid">@foreach([$branch,...($branch['children'] ?? [])] as $link)<a class="submenu-item" href="{{ $link['href'] }}"><span class="gerd"></span><span class="submenu-text">{{ $link['title'] }}</span></a>@endforeach</div>
-@endif
+<div class="portal-menu-columns">
+    @foreach(!empty($branch['children']) ? $branch['children'] : [$branch] as $group)
+        <section class="portal-menu-group">
+            <a class="portal-menu-group-title" href="{{ $group['href'] }}">{{ $group['title'] }}</a>
+            @if(!empty($group['children']))
+                @include('partials.mega-links',['links'=>$group['children']])
+            @endif
+        </section>
+    @endforeach
+</div>

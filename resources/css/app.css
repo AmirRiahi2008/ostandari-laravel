@@ -13,6 +13,7 @@
 @import './legacy/authentication.css';
 @import './legacy/content-article.css';
 @import './native.css';
+@import './refinements.css';
 @source '../views/**/*.blade.php';
 @source '../js/**/*.{js,ts}';
 @theme { --font-vazirmatn: 'vazirmatn',sans-serif; --color-ostan-blue:#00477a; --color-ostan-teal:#119e99; }
