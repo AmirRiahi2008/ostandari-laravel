@@ -1,0 +1,131 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Str;
+
+/** Presentation helpers shared by the Blade public and management views. */
+final class PortalView
+{
+    private array $files = [];
+
+    public function data(string $name): array
+    {
+        return $this->files[$name] ??= json_decode(file_get_contents(resource_path('data/'.$name.'.json')), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function county(?string $name): ?array
+    {
+        $aliases = ['noor'=>'nur', 'nour'=>'nur', 'chalus'=>'chalus', 'chalous'=>'chalus', 'nowshahr'=>'noshahr', 'mahmoudabad'=>'mahmudabad', 'mahmoodabad'=>'mahmudabad', 'fereydounkenar'=>'fereydunkenar', 'joybar'=>'juybar', 'miandorood'=>'miandorud', 'ghalugah'=>'galugah', 'galoogah'=>'galugah', 'ghaemshahr'=>'qaemshahr', 'north-savadkuh'=>'savadkuh-shomali', 'gov_tonekabon'=>'tonekabon'];
+        $slug = $aliases[$name ?? ''] ?? $name;
+        return collect($this->data('frontend')['counties'])->first(fn ($county) => $county['slug'] === $slug || $county['name'] === $name);
+    }
+
+    public function href(?string $path, ?array $county = null): string
+    {
+        $path = $path ?: '/';
+        if (preg_match('~^(https?://|mailto:|tel:)~i', $path)) return $path;
+        if (! str_starts_with($path, '/') || str_starts_with($path, '//') || preg_match('/[\\\\\x00-\x1f\x7f]/', $path)) return '#';
+        if(parse_url($path,PHP_URL_PATH)==='/office'){
+            parse_str(parse_url($path,PHP_URL_QUERY) ?? '',$query);
+            if($destination=$this->county($query['name']??null)) return '/'.$destination['slug'].(($query['section']??null)==='about'?'/about':'');
+        }
+        if (! $county || preg_match('~^/(login|register|citizen|panel|county-admin|en|ar|forgot-password|password|counties|design|fonts|styles|build|storage|api|web-api|session)(/|\?|$)~', $path)) return $path;
+        if($this->county(explode('/',ltrim(parse_url($path,PHP_URL_PATH),'/'))[0]??null)) return $path;
+        if (str_starts_with($path, '/'.$county['slug'].'/') || $path === '/'.$county['slug']) return $path;
+        $path = preg_replace('~^/office(?=\?|$)~', '/', $path);
+        return '/'.$county['slug'].($path === '/' ? '' : $path);
+    }
+
+    public function image(mixed $record): ?string
+    {
+        if (is_array($record)) {
+            foreach (['cover', 'image', 'banner', 'image_url'] as $key) {
+                if (isset($record[$key])) {
+                    $image = $this->image($record[$key]);
+                    if ($image) return $image;
+                }
+            }
+            if($image=$this->image($record['metadata']['design_image'] ?? null)) return $image;
+            if(isset($record['url']) && (str_starts_with($record['mime']??'', 'image/') || (!isset($record['title']) && !isset($record['name'])))) return $this->image($record['url']);
+            $source=$this->data('official-site');
+            if(($record['name']??null) === ($source['governor']['name']??null)) return $this->image($source['governor']['image']);
+            foreach($source['slides'] as $slide) if(!empty($record['title']) && $record['title']===$slide['title']) return $this->image($slide['image']);
+            return null;
+        }
+        return is_string($record) && preg_match('~^(https?://|/(?!/))~i', $record) ? $record : null;
+    }
+
+    public function text(mixed $value, int $limit = 0): string
+    {
+        $value = trim(html_entity_decode(strip_tags(is_scalar($value) ? (string) $value : ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        return $limit ? Str::limit($value, $limit) : $value;
+    }
+
+    public function date(?string $value): string
+    {
+        if (! $value) return '';
+        try {
+            $formatter = new \IntlDateFormatter('fa_IR@calendar=persian', \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE, 'Asia/Tehran', \IntlDateFormatter::TRADITIONAL, 'yyyy/MM/dd');
+            return $formatter->format(new \DateTimeImmutable($value));
+        } catch (\Throwable) { return $value; }
+    }
+
+    public function article(array $record, ?array $county = null): string
+    {
+        return $this->href('/content/'.rawurlencode((string) $record['id']), $county);
+    }
+
+    public function countyTitle(string $title, ?array $county): string
+    {
+        if(!$county) return $title;
+        $title=str_replace(['آشنایی با مازندران','مدیران استان','استانداری مازندران'],['آشنایی با '.$county['name'],'مدیران شهرستان','فرمانداری '.$county['name']],$title);
+        $title=preg_replace('/استاندار(?:ان)?(?: ادوار)?/u','فرماندار',$title);
+        return str_replace(['معاونین فرماندار مازندران','فرمانداران مازندران','مدیران روابط عمومی استان','دستگاه‌های استان','دستگاه های اجرایی استان','مازندران'],['معاونین فرماندار','بخشداران و دهیاران','مدیران روابط عمومی شهرستان','دستگاه‌های شهرستان','دستگاه‌های اجرایی شهرستان',$county['name']],$title);
+    }
+
+    public function navigation(array $menus, ?array $county = null): array
+    {
+        $menu = collect($menus)->firstWhere('key', 'official-main');
+        $convert = function (array $items) use (&$convert, $county): array {
+            return array_map(fn ($item) => [
+                'id' => (string) $item['id'], 'title' => $item['title'],
+                'href' => $this->href(!empty($item['content_id']) ? '/content/'.$item['content_id'] : ($item['url'] ?? $item['href'] ?? '/'), $county),
+                'children' => $convert($item['children'] ?? []),
+            ], $items);
+        };
+        $items = !empty($menu['items']) ? $convert($menu['items']) : $this->data('frontend')['officialNavigation']['main'];
+        $scope = function (array $items) use (&$scope, $county): array {
+            if($county)$items=array_values(array_filter($items,fn($item)=>!str_contains($item['href'],'/office?')));
+            return array_map(fn ($item) => [...$item, 'title'=>$this->countyTitle($item['title'],$county), 'href' => $this->href($item['href'], $county), 'children' => $scope($item['children'] ?? [])], $items);
+        };
+        return $scope($items);
+    }
+
+    public function section(string $path): ?array
+    {
+        return collect($this->data('frontend')['officialSections'])->first(fn ($section) => parse_url($section['href'], PHP_URL_PATH) === $path);
+    }
+
+    public function membersForGroup(array $people, string $group): array
+    {
+        return array_values(array_filter($people, function ($person) use ($group) {
+            if (($person['kind']??'')==='county_governor') return $group==='4';
+            if (($person['kind']??'')==='advisor') return $group==='6';
+            if (!empty($person['kind']) && $person['kind']!=='manager') return false;
+            $slug=$person['category']['slug']??'';
+            if(preg_match('/menu-(61|64|62|63|198|109)$/',$slug,$m)) return ['61'=>'1','64'=>'2','62'=>'3','63'=>'4','198'=>'5','109'=>'6'][$m[1]]===$group;
+            $label=str_replace(['ي','ك','‌'],['ی','ک',' '],($person['category']['name']??'').' '.($person['position']??''));
+            $inferred=preg_match('/روابط\s*عمومی/u',$label)?'5':(str_contains($label,'معاون')?'2':(preg_match('/دستگاه|ادارات/u',$label)?'3':'1'));
+            return $inferred===$group;
+        }));
+    }
+
+    public function moduleAllowed(array $module, \App\Models\User $user): bool
+    {
+        if ($module['path'] === '/panel/admin/annual-slogan') return Workspace::mayManageAnnualSlogan($user);
+        if (!$user->hasPermission($module['permission'])) return false;
+        if (Workspace::context($user)['type'] === 'county' && in_array($module['path'], ['/panel/admin/governors','/panel/admin/counties','/panel/admin/settings','/panel/admin/item-order','/panel/admin/roles','/panel/admin/internal-users','/panel/admin/external-users','/panel/admin/subscribers'], true)) return false;
+        return true;
+    }
+}

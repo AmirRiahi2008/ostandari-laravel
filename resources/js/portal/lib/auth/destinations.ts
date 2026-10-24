@@ -1,0 +1,31 @@
+import type { PortalUser } from '@/types/portal';
+
+export const ADMIN_HOME = '/panel/admin';
+export const ADMIN_LOGIN = '/panel/admin/login';
+
+export function adminDestination(user: PortalUser, requested?: string | null): string {
+  if (user.person_type === 'citizen' || user.is_active === false || !user.role?.permissions?.length)
+    throw new Error('این حساب اجازهٔ ورود به پنل مدیریت را ندارد.');
+  const workspace = user.portal_context;
+  if (workspace?.type === 'county') {
+    const slug = workspace.county?.slug;
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) throw new Error('فرمانداری این حساب مشخص نیست.');
+    return '/county-admin/' + slug;
+  }
+  if (!requested || /[\\\u0000-\u001f\u007f]/.test(requested)) return ADMIN_HOME;
+  try {
+    const url = new URL(requested, 'https://portal.invalid');
+    if (url.origin !== 'https://portal.invalid' || !/^\/panel\/admin(?:\/|$)/.test(url.pathname))
+      return ADMIN_HOME;
+    if ([ADMIN_LOGIN, ADMIN_HOME + '/logout'].includes(url.pathname)) return ADMIN_HOME;
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return ADMIN_HOME;
+  }
+}
+
+export function citizenDestination(user: PortalUser): string {
+  if (user.person_type !== 'citizen' || user.is_active === false)
+    throw new Error('این حساب برای ورود شهروندی معتبر نیست.');
+  return '/citizen';
+}

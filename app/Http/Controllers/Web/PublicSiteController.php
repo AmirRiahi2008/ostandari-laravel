@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Http\Controllers\Web;
+
+use App\Http\Controllers\Api\PublicController;
+use App\Http\Controllers\Api\CommunityController;
+use App\Models\Organization;
+use App\Services\PortalView;
+use App\Services\Html;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+final class PublicSiteController
+{
+    public function __invoke(Request $request, PortalView $ui, PublicController $public, ?string $path = null)
+    {
+        $path = '/'.trim($path ?? '', '/');
+        abort_if($path === '/admin' || str_starts_with($path, '/admin/'), 404);
+        if($legacyCounty=$ui->county($request->query('name'))){
+            $legacyQuery=$request->except(['name','section']);
+            $legacyPath=$path==='/office'?(($request->query('section')==='about')?'/about':'/'):$path;
+            return redirect($ui->href($legacyPath,$legacyCounty).($legacyQuery?'?'.http_build_query($legacyQuery):''));
+        }
+        $county = $ui->county(explode('/', trim($path, '/'))[0] ?? null);
+        if ($county) {
+            $first = explode('/', trim($path, '/'))[0];
+            if ($first !== $county['slug']) return redirect('/'.$county['slug'].substr($path, strlen($first)+1).($request->getQueryString() ? '?'.$request->getQueryString() : ''));
+            $path = substr($path, strlen($county['slug'])+1) ?: '/';
+        }
+        if ($path === '/office' && $ui->county($request->query('name'))) return redirect('/'.$ui->county($request->query('name'))['slug']);
+        if ($path === '/county') return redirect('/counties');
+        if ($path === '/link') return redirect($ui->href('/links', $county));
+        if ($path === '/blank' && $request->query('id') === '57') return redirect($ui->href('/install', $county));
+        if ($path === '/manager') return redirect($ui->href('/managers?group='.urlencode($request->query('member_group', '1')), $county));
+
+        $meta = $ui->data('frontend');
+        $section = $ui->section($path);
+        $template = collect($meta['templates'])->first(fn($p)=>$p['group']==='site' && $p['path']===$path);
+        $extra = ['/services','/services/provincial','/links','/gallery','/forms','/forum','/governors','/deputies','/transparency','/governorate','/duties','/sitemap','/sitemap.xml','/rss','/about/general','/districts','/units','/accessibility','/performance','/participation','/service-agreement/statement','/polls/site','/announcements','/resolutions','/documents','/password','/verify'];
+        $dynamic = preg_match('~^/(news|content|service|forms|forum)/([^/]+)$~', $path, $match);
+        abort_unless($path==='/' || isset($meta['publicTitles'][$path]) || $section || $template || $dynamic || in_array($path, $extra, true) || in_array($path, ['/en','/ar'], true), 404);
+        $title = $county && $path==='/' ? 'فرمانداری شهرستان '.$county['name'] : ($meta['publicTitles'][$path] ?? $section['title'] ?? 'پرتال استانداری مازندران');
+        $page = ($county ? collect($meta['templates'])->firstWhere('path','/county') : $template) ?? collect($meta['templates'])->firstWhere('path','/') ?? [];
+        $page = [...$page, 'id'=>'BladePublicPage', 'path'=>$request->getPathInfo(), 'resource'=>'', 'serverRendered'=>true, 'controller'=>'site'];
+        $query = $request->query();
+        $query['locale'] = in_array($path, ['/en','/ar'], true) ? substr($path,1) : 'fa';
+        $page['lang'] = $query['locale'];
+        if(in_array($path,['/en','/ar'],true)){
+            $page=[...$template,'controller'=>'site','serverRendered'=>false];
+            return view('site.foreign-page',['page'=>$page,'title'=>$template['title']]);
+        }
+        $organization = $county ? Organization::active()->with(['county','aerial','banner'])->where('type','county')->whereHas('county', fn($q)=>$q->whereIn('slug', \App\Support\CountySlugs::variants($county['slug'])))->first() : null;
+        if ($county && $organization) $query['organization_id'] = $organization->id;
+        $r = $request->duplicate($query);
+        $home = $county && !$organization ? ['settings'=>$public->settings()->getData(true)['data'], 'menus'=>[]] : $public->home($r, $organization?->slug)->getData(true)['data'];
+        if (config('website.snapshot') && !$county) {
+            $snapshot = $ui->data('official-site');
+            if (empty($home['news'])) $home['news'] = array_map(fn($n)=>[...$n,'id'=>$n['slug']], array_filter($snapshot['news'],fn($n)=>$n['type']==='news'));
+            if (empty($home['slides'])) $home['slides'] = $snapshot['slides'];
+            if (empty($home['governor'])) $home['governor'] = $snapshot['governor'];
+        }
+        $data = ['page'=>$page,'path'=>$path,'title'=>$title,'county'=>$county,'organization'=>$organization?->toArray(),'home'=>$home,'settings'=>$home['settings'] ?? [],'navigation'=>$ui->navigation($home['menus'] ?? [], $county),'section'=>$section,'items'=>[],'meta'=>null,'view'=>'generic'];
+        if ($path==='/' || in_array($path,['/en','/ar'],true)) {
+            $data['view']=$county?'county-home':'home';
+        } elseif($county && $path==='/about') {
+            $data['view']='county-home';
+        } elseif ($dynamic && in_array($match[1], ['content','news'],true)) {
+            try {
+                $payload = ctype_digit($match[2]) ? $public->content($r, (int)$match[2])->getData(true)['data'] : $public->contentSlug($r,'news',$match[2])->getData(true)['data'];
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                $snapshot = config('website.snapshot') ? collect($ui->data('official-site')['news'])->firstWhere('slug',$match[2]) : null;
+                if (!$snapshot) throw $e;
+                $payload = ['content'=>[...$snapshot,'id'=>$snapshot['slug'],'body'=>'<p>'.e($snapshot['excerpt'] ?? '').'</p>'],'related'=>[],'comments'=>[]];
+            }
+            abort_if($county && ($payload['content']['organization_id'] ?? null) !== $organization?->id, 404);
+            $data += $payload;
+            $data['title']=$payload['content']['title'];$data['view']='article';
+        } elseif ($section && ($section['kind'] ?? '')==='article') {
+            $payload = $public->contentSlug($r, $section['record_type'] ?? 'page', $section['record_slug'] ?? 'official-page-'.$section['id'])->getData(true)['data'];
+            $data += $payload;$data['title']=$payload['content']['title'];$data['view']='article';
+        } else {
+            $types=['/news'=>'news','/announcements'=>'announcement','/resolutions'=>'resolution','/documents'=>'document','/regulations'=>'document','/investments'=>'publication','/tenders'=>'tender','/contracts'=>'contract','/calls'=>'call','/events'=>'event','/duties'=>'duty'];
+            $kind=$section['kind'] ?? '';
+            if (isset($types[$path]) || in_array($kind,['news','documents','tenders'],true)) {
+                $result=$public->contents($r,$types[$path] ?? ['news'=>'news','documents'=>'document','tenders'=>'tender'][$kind])->getData(true);
+                $data['items']=$county&&!$organization ? [] : $result['data'];$data['meta']=$result['meta'];$data['view']='collection';
+            } elseif (in_array($path,['/managers','/governors','/deputies'],true) || in_array($kind,['managers','governors'],true)) {
+                $group=(string)($section['group'] ?? $request->query('group','1'));
+                $memberKind=$path==='/governors'||$kind==='governors'?'governor':($group==='4'?'county_governor':($group==='6'?'advisor':'manager'));
+                if ($county) $memberKind=$path==='/governors'?'county_governor':$memberKind;
+                $rq=$r->duplicate([...$query,'kind'=>$request->query('kind',$memberKind),'per_page'=>100]);
+                $data['items']=$county&&!$organization?[]:$public->catalog($rq,'members')->getData(true)['data'];
+                if ($request->filled('person')) $data['items']=array_values(array_filter($data['items'],fn($p)=>(string)$p['id']===$request->query('person')));
+                if (!in_array($memberKind,['governor','county_governor'],true)) $data['items']=$ui->membersForGroup($data['items'],$group);$data['view']='members';
+            } elseif (in_array($path,['/services','/services/provincial','/links','/gallery','/forms','/faq','/polls','/polls/site'],true) || in_array($kind,['services','links','faqs','polls'],true) || ($dynamic && in_array($match[1],['service','forms'],true))) {
+                $resource=$dynamic ? ($match[1]==='service'?'services':'forms') : (['/gallery'=>'galleries','/faq'=>'faqs','/services/provincial'=>'services','/polls/site'=>'polls'][$path] ?? ltrim($path,'/'));
+                if ($section && in_array($kind,['services','links','faqs','polls'],true)) $resource=$kind;
+                $id=$dynamic?(int)$match[2]:($request->integer('id') ?: $request->integer('album'));
+                $data['items']=$county&&!$organization?[]:($id?[$public->catalogShow($r,$id,$resource)->getData(true)['data']]:$public->catalog($r->duplicate([...$query,'per_page'=>100]),$resource)->getData(true)['data']);
+                if ($county) $data['items']=array_values(array_filter($data['items'],fn($x)=>!isset($x['organization_id'])||$x['organization_id']===$organization?->id));
+                $data['resource']=$resource;$data['view']='catalog';
+            } elseif ($path==='/transparency' || ($section['id']??null)==='menu-195') {
+                $data['view']='transparency';$data['transparent']=['tender'=>$public->contents($r,'tender')->getData(true)['data'],'contract'=>$public->contents($r,'contract')->getData(true)['data']];
+            } elseif ($path==='/search') {
+                $data['results']=$request->filled('q') ? $public->search($r)->getData(true)['data'] : [];$data['view']='search';
+            } elseif (in_array($path,['/install','/download'],true)) {$data['view']='install';
+            } elseif ($path==='/counties') {$data['view']='counties';
+            } elseif ($path==='/quick-access') {
+                $data['items']=array_map(fn($destination)=>['href'=>$destination,'title'=>$meta['publicTitles'][$destination]??'خدمات الکترونیکی'],['/news','/counties','/services','/services/provincial','/contact','/track','/managers','/duties','/gallery','/transparency','/information','/regulations','/faq','/polls','/links','/citizen']);
+            } elseif (in_array($path,['/regulations','/privacy'],true)) {$data['view']='terms';
+            } elseif (in_array($path,['/contact','/contact-us','/ideas','/support'],true)) {$data['view']='contact';
+            } elseif ($path==='/assistant') {$data['view']='assistant';
+            } elseif ($path==='/sitemap' || $path==='/sitemap.xml') {$data['view']='sitemap';
+            } elseif ($path==='/rss') {
+                $news=$home['news']??[];
+                return response(view('site.rss',['items'=>$news,'ui'=>$ui]))->header('Content-Type','application/rss+xml; charset=UTF-8');
+            } elseif ($path==='/forum' || $kind==='forum' || ($dynamic&&$match[1]==='forum')) {
+                $community=app(CommunityController::class);
+                $data['forum']=$dynamic?$community->topic((int)$match[2])->getData(true)['data']:$community->topics($r)->getData(true)['data'];$data['view']='forum';$data['forumCategories']=\App\Models\Category::active()->where('type','forum')->get(['id','name'])->toArray();
+            } elseif ($path==='/forgot-password' || $path==='/password' || $path==='/verify') {$data['view']='recovery';
+            } elseif ($section) {
+                $data['items']=collect($ui->data('official-site')['pages'])->whereIn('id',$section['children']??[])->values()->all();
+                if (empty($data['items'])) {
+                    try {$data['content']=$public->contentSlug($r,'page','official-page-'.$section['id'])->getData(true)['data']['content'];$data['view']='article';$data['related']=[];$data['comments']=[];} catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {}
+                }
+            }
+        }
+        if ($path==='/sitemap.xml') {
+            $xml='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+            foreach($meta['officialSections'] as $entry){$href=$ui->href($entry['href'],$county);if(str_starts_with($href,'/')&&!str_starts_with($href,'//'))$xml.='<url><loc>'.htmlspecialchars(url($href),ENT_XML1,'UTF-8').'</loc></url>';}
+            return response($xml.'</urlset>')->header('Content-Type','application/xml; charset=UTF-8');
+        }
+        return view('site.page',$data);
+    }
+}
