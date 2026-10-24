@@ -359,3 +359,4 @@
 @media(max-width:800px){.portal-auth-refresh .portal-registration-layout{grid-template-columns:1fr;grid-template-rows:auto;grid-template-areas:'fields' 'terms' 'consent' 'submit'}}
 
 .portal-events-home:has(.portal-event-subscription[open]){z-index:4}
+.home-experience>.sections-container>.portal-events-home{width:92%;margin-inline:auto;box-sizing:border-box}
