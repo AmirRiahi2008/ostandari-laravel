@@ -96,7 +96,7 @@ class MediaController
             ($m->url && (is_array($slogan) ? ($slogan['url'] ?? null) : $slogan) === $m->url);
         abort_if($used, 409, 'فایل هنوز در محتوا یا مکاتبات استفاده می‌شود.');
         // A tombstone prevents broken references; the file is physically removed only when unreferenced.
-        Storage::disk($m->disk)->delete($m->path);
+        if ($m->disk !== 'portal-icons') Storage::disk($m->disk)->delete($m->path);
         $m->delete();
         Audit::record('media.deleted',$m);
 

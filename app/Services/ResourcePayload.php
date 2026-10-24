@@ -212,6 +212,13 @@ class ResourcePayload
             throw ValidationException::withMessages(['metadata' => 'فراداده بیش از حد مجاز است.']);
         }
 
+        if ($resource === 'links' && array_key_exists('icon', $data)) {
+            if ($data['icon']) {
+                $data['media_id'] = PortalIcons::media($data['icon'], $actor, $data['organization_id'] ?? $model?->organization_id ?? $actor->organization_id)->id;
+            }
+            unset($data['icon']);
+        }
+
         return $data;
     }
 

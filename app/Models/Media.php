@@ -14,7 +14,9 @@ class Media extends PortalModel
 
     public function getUrlAttribute(): ?string
     {
-        return $this->visibility === 'public' ? Storage::disk('public')->url($this->path) : null;
+        if ($this->visibility !== 'public') return null;
+        if ($this->disk === 'portal-icons') return '/design/icons/'.basename($this->path);
+        return Storage::disk('public')->url($this->path);
     }
 
     public function owner()

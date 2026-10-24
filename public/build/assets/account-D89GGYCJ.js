@@ -1,1 +1,0 @@
-import{C as e}from"./app-DFFEZ1Kj.js";async function t(t=!1){await e(`auth/logout`,{method:`POST`}),window.location.assign(`/panel/admin/login`)}export{t as logoutAdmin};

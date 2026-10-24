@@ -10,6 +10,13 @@ import {mountHomeMotion} from './portal/features/site/home-motion';
 
 const digits=(s:unknown)=>String(s??'').replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))).replace(/[٠-٩]/g,c=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)));
 const post=(path:string,data:unknown,method='POST')=>api<any>(path,{method,body:jsonBody(data)});
+const citizenDestination=()=>{
+  const value=new URLSearchParams(location.search).get('return');
+  if(!value||!value.startsWith('/')||value.startsWith('//')||value.includes('\\'))return '/citizen';
+  const url=new URL(value,location.origin);
+  if(url.origin!==location.origin||/^\/(?:panel|admin|session|web-api|api|login|register)(?:\/|$)/.test(url.pathname))return '/citizen';
+  return url.pathname+url.search+url.hash;
+};
 
 Alpine.data('portalPage',()=>({
   busy:false,mobileOpen:false,abort:new AbortController(),motion:undefined as undefined|(()=>void),
@@ -60,8 +67,8 @@ Alpine.data('authForm',(mode:string,countySlug:string,termsVersion:string,termsH
         location.assign(adminDestination(result.data.user,new URLSearchParams(location.search).get('return')));return;
       }
       if(this.mode==='register'&&!this.accepted)throw Error('برای ادامهٔ ثبت‌نام، قوانین و مقررات را تأیید کنید.');
-      if(this.demo){citizenDemo().signIn({name:this.name,mobile:this.mobile,national_code:this.national_code},this.mode==='register');location.assign('/citizen');return;}
-      if(this.challenge){await post('auth/otp/verify',{challenge_id:this.challenge,code:digits(this.code)});location.assign('/citizen');return;}
+      if(this.demo){citizenDemo().signIn({name:this.name,mobile:this.mobile,national_code:this.national_code},this.mode==='register');location.assign(citizenDestination());return;}
+      if(this.challenge){await post('auth/otp/verify',{challenge_id:this.challenge,code:digits(this.code)});location.assign(citizenDestination());return;}
       const result=await post(this.mode==='register'?'auth/register':'auth/citizen/login',this.mode==='register'?{name:this.name,mobile:digits(this.mobile),national_code:digits(this.national_code),terms_accepted:this.accepted,terms_version:termsVersion,terms_document_sha256:termsHash}:{mobile:digits(this.mobile)});
       this.challenge=result.data.challenge_id;this.devCode=result.data.dev_code??'';
     }catch(e){this.error=e instanceof Error?e.message:'ورود انجام نشد.';}finally{this.busy=false;}
