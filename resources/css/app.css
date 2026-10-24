@@ -20,4 +20,4 @@
 [x-cloak],[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 [data-preview='false']:not([data-ready='true']) .education-table tbody{visibility:hidden}
-@media print{header,aside,footer,.portal-editor-actions,.source-breadcrumb{display:none!important}.source-article{max-width:none!important}}
+@media print{.header-container,.sidebar,footer,.portal-editor-actions,.source-breadcrumb,.portal-article-toolbar,.portal-related-content,.portal-comments{display:none!important}.source-article,.portal-article-page{max-width:none!important}.portal-article-heading{display:block!important}}

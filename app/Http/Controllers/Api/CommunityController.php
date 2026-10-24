@@ -21,6 +21,7 @@ class CommunityController
 {
     public function comment(Request $r, int $id)
     {
+        abort_unless($r->user()?->is_active && $r->user()->person_type === 'citizen', 403, 'برای ثبت دیدگاه وارد حساب شهروندی شوید.');
         $content = Content::visible()->findOrFail($id);
         abort_unless($content->comments_enabled, 409, 'ارسال نظر غیرفعال است.');
         $d = $r->validate(['body' => 'required|string|min:3|max:5000']);
