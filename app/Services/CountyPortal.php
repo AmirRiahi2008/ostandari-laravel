@@ -103,6 +103,7 @@ final class CountyPortal
             if (array_key_exists('video_url', $validated)) $county->video_url = $validated['video_url'];
             if ($county->isDirty()) $county->save();
             $data = array_replace($data, Arr::only($validated, ['title','slogan_text','logo_media_id','slogan_media_id']));
+            if (array_key_exists('slogan_text', $validated)) $data['slogan_text'] = $validated['slogan_text'] ?? '';
             if (array_key_exists('about_body', $validated)) $data['about_body'] = Html::clean($validated['about_body'] ?? '');
             foreach (self::SECTIONS as $key=>$_) if (array_key_exists('section_'.$key, $validated)) $data['sections'][$key] = $validated['section_'.$key];
             foreach (self::TITLES as $key=>$_) if (array_key_exists('title_'.$key, $validated)) $data['titles'][$key] = $validated['title_'.$key];

@@ -16,8 +16,11 @@ final class NewsFeeds
         // The publishing organization determines this feed, including imported news
         // whose old metadata names another group.
         if ($scope === 'governorates') {
-            return $query->where('type', 'news')->whereHas('organization', fn (Builder $org) => $org->active()->where('type', 'county')
-                ->whereHas('county', fn (Builder $county) => $county->active()));
+            return $query->where('type', 'news')->where(fn (Builder $feed) =>
+                $feed->whereHas('organization', fn (Builder $org) => $org->active()->where('type', 'county')
+                    ->whereHas('county', fn (Builder $county) => $county->active()))
+                ->orWhere(fn (Builder $curated) => $curated->where('metadata->news_scope', 'governorates')
+                    ->where(fn (Builder $org) => $org->where('organization_id', $root)->orWhereNull('organization_id'))));
         }
         if ($scope === 'province') {
             $query->where(fn (Builder $org) => $org->where('organization_id', $root)->orWhereNull('organization_id'));

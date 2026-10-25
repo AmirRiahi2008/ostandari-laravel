@@ -1,5 +1,5 @@
 @php
-    $portalName=$settings['site.name'] ?? ($county ? 'فرمانداری شهرستان '.$county['name'] : 'استانداری مازندران');
+    $portalName=$county ? ($home['county_portal']['title'] ?? 'فرمانداری شهرستان '.$county['name']) : ($settings['site.name'] ?? 'استانداری مازندران');
     $countySections=$home['county_portal']['sections'] ?? [];
     $logo=$ui->image($settings['site.logo'] ?? null) ?? '/design/site/assets/image/logo.png';
     $local=fn($href)=>$county ? preg_replace('~^/'.preg_quote($county['slug'],'~').'(?=/|\?|$)~','',$href) ?: '/' : $href;

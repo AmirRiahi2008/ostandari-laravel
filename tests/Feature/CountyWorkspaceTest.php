@@ -100,8 +100,8 @@ final class CountyWorkspaceTest extends TestCase
         $logo=$this->image($this->amol);$banner=$this->image($this->amol);$slogan=$this->image($this->amol);
         $this->putJson('/web-api/v1/admin/county-portal',['title'=>'پرتال ویژه آمل','about_body'=>'<h2>معرفی اختصاصی آمل</h2><script>alert(1)</script>',
             'county_description'=>'معرفی کوتاه آمل','phone'=>'01112345678','logo_media_id'=>$logo->id,'banner_media_id'=>$banner->id,
-            'slogan_media_id'=>$slogan->id,'section_gallery'=>false,'title_news'=>'تازه‌های آمل'])
-            ->assertOk()->assertJsonPath('data.logo_media_id',$logo->id)->assertJsonPath('data.section_gallery',false);
+            'slogan_media_id'=>$slogan->id,'slogan_text'=>'','section_gallery'=>false,'title_news'=>'تازه‌های آمل'])
+            ->assertOk()->assertJsonPath('data.logo_media_id',$logo->id)->assertJsonPath('data.section_gallery',false)->assertJsonPath('data.slogan_text','');
         $this->get('/amol')->assertOk()->assertSee('پرتال ویژه آمل')->assertSee($logo->url,false)->assertSee($banner->url,false)->assertSee($slogan->url,false)->assertSee('تازه‌های آمل')->assertDontSee('portal-office-gallery',false);
         $this->get('/amol/about')->assertOk()->assertSee('معرفی اختصاصی آمل')->assertDontSee('alert(1)',false);
         $this->get('/nur')->assertOk()->assertDontSee('پرتال ویژه آمل')->assertDontSee($logo->url,false);
@@ -160,6 +160,10 @@ final class CountyWorkspaceTest extends TestCase
         $this->assertSame([$id],$this->getJson('/api/v1/home')->json('data.news_feeds.governorates.*.id'));
         $this->deleteJson('/web-api/v1/admin/contents/'.$id)->assertNoContent();
         $this->assertSame([],$this->getJson('/api/v1/home')->json('data.news_feeds.governorates'));
+        $admin=User::where('username','admin')->firstOrFail();
+        $curated=Content::create(['type'=>'news','title'=>'Curated governorates report','slug'=>'curated-governorates','body'=>'Published report',
+            'organization_id'=>$admin->organization_id,'author_id'=>$admin->id,'status'=>'published','published_at'=>now()->subMinute(),'metadata'=>['news_scope'=>'governorates']]);
+        $this->assertSame([$curated->id],$this->getJson('/api/v1/home')->json('data.news_feeds.governorates.*.id'));
     }
 
     public function test_county_page_bindings_are_editable_and_never_replace_another_portal_page(): void
