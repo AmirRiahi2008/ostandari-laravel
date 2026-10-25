@@ -35,7 +35,7 @@
         <nav class="desktop-menu" aria-label="منوی اصلی">
             <div class="menu-right">
                 <div class="menu-item"><div class="rast">@include('icons.home')<a href="{{ $ui->href('/',$county) }}">صفحه اصلی</a></div></div>
-                @if($countySections['nav_duties']??true)<div class="menu-item"><div class="rast">@include('icons.document')<a href="{{ $ui->href('/duties',$county) }}">شرح وظایف واحدها</a></div></div>@endif
+                @if($countySections['nav_duties']??true)<div class="menu-item"><div class="rast">@include('icons.duties')<a href="{{ $ui->href('/duties',$county) }}">شرح وظایف واحدها</a></div></div>@endif
                 @if($categories)<div class="menu-item has-mega source-mega" :class="{'is-open':mega}" @mouseenter="openMega()" @mouseleave="closeMega()" @focusin="openMega()" @focusout="if(!$el.contains($event.relatedTarget))mega=false">
                     <div class="rast">@include('icons.services')<button type="button" id="khadmat" :aria-expanded="mega" aria-controls="source-services-menu" @click="openMega()" @keydown.arrow-down.prevent="openMega();$nextTick(()=>$refs.firstCategory?.focus())">خدمات <svg class="source-mega-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg></button></div>
                     <div class="mega-menu" id="source-services-menu" role="region" aria-label="خدمات و بخش‌های {{ $portalName }}" x-show="mega" x-cloak>

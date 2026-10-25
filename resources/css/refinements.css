@@ -3,8 +3,11 @@
 [data-section='site'] [data-alpine-header][data-portal-ui] .imageeee{margin-block:10px!important}
 [data-section='site'] [data-alpine-header][data-portal-ui] .top-header{margin-block:0!important;overflow:visible}
 [data-section='site'] [data-alpine-header][data-portal-ui] .header-box{height:92px;min-height:92px;overflow:visible}
+/* Every desktop dropdown joins the navigation with the same bottom corners. */
+[data-section='site'] [data-alpine-header][data-portal-ui] .header-box:is([data-mega-open='true'],:has(.source-direct-menu.is-open>.source-direct-panel)){border-end-start-radius:0;border-end-end-radius:0;box-shadow:0 4px 18px #163c7312}
 [data-section='site'] [data-alpine-header][data-portal-ui] :is(.logo-wrapper,.hum-logo) img{max-width:none!important;max-height:none!important;object-fit:contain;transform:scale(1.5)!important;transform-origin:center}
-[data-section='site'] [data-alpine-header][data-portal-ui] .logo-wrapper{position:relative;inset:auto;transform:none;width:112px;height:92px;display:flex;align-items:center;justify-content:center;z-index:3}
+/* Keep the emblem above both dropdown layers (80 and 85), inside the header. */
+[data-section='site'] [data-alpine-header][data-portal-ui] .logo-wrapper{position:relative;inset:auto;transform:none;width:112px;height:92px;display:flex;align-items:center;justify-content:center;z-index:90}
 [data-section='site'] [data-alpine-header][data-portal-ui] .logo-wrapper>a{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 [data-section='site'] [data-alpine-header][data-portal-ui] .logo-wrapper img{width:76px;height:82px}
 [data-section='site'] [data-alpine-header][data-portal-ui] .desktop-menu{display:grid!important;grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr);gap:12px;height:92px;align-items:center}
