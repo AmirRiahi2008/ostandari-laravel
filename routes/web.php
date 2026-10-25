@@ -17,7 +17,8 @@ Route::get('/login', [AuthPageController::class, 'login'])->name('login');
 Route::get('/register', [AuthPageController::class, 'register']);
 Route::get('/panel/admin/login', [AuthPageController::class, 'staff']);
 Route::get('/county-admin/{slug}/login', [AuthPageController::class, 'county'])->where('slug', '[a-z0-9-]+');
-Route::get('/county-admin/{slug}', [AdminController::class, 'county'])->middleware(WebStaff::class)->where('slug', '[a-z0-9-]+');
+Route::get('/county-admin/{slug}/{path?}', [AdminController::class, 'county'])->middleware(WebStaff::class)
+    ->where(['slug' => '[a-z0-9-]+', 'path' => '.*'])->name('county.admin');
 Route::get('/panel/admin/{path?}', [AdminController::class, 'show'])->middleware(WebStaff::class)->where('path', '.*');
 Route::get('/citizen', [AuthPageController::class, 'citizen']);
 Route::get('/{path?}', PublicSiteController::class)->where('path', '.*');

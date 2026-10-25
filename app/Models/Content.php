@@ -6,7 +6,12 @@ class Content extends PortalModel
 {
     use HasMedia;
 
-    protected $appends = ['news_scope'];
+    protected $appends = ['news_scope', 'portal_path'];
+
+    public function getPortalPathAttribute(): ?string
+    {
+        return $this->metadata['portal_path'] ?? null;
+    }
 
     public function getNewsScopeAttribute(): ?string
     {

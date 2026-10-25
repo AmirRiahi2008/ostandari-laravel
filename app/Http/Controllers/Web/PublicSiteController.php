@@ -60,7 +60,12 @@ final class PublicSiteController
             if (empty($home['governor'])) $home['governor'] = $snapshot['governor'];
         }
         $data = ['page'=>$page,'path'=>$path,'title'=>$title,'county'=>$county,'organization'=>$organization?->toArray(),'home'=>$home,'settings'=>$home['settings'] ?? [],'navigation'=>$ui->navigation($home['menus'] ?? [], $county),'section'=>$section,'items'=>[],'meta'=>null,'view'=>'generic'];
-        if ($path==='/' || in_array($path,['/en','/ar'],true)) {
+        $countyPage = $county && $organization && isset(\App\Services\CountyPortal::pages()[$path])
+            ? \App\Models\Content::visible()->where('organization_id',$organization->id)->where('locale',$query['locale'])->where('type','page')->where('metadata->portal_path',$path)->latest('updated_at')->first() : null;
+        if ($countyPage) {
+            $data += $public->content($r,$countyPage->id)->getData(true)['data'];
+            $data['title']=$countyPage->title;$data['view']='article';
+        } elseif ($path==='/' || in_array($path,['/en','/ar'],true)) {
             $data['view']=$county?'county-home':'home';
         } elseif($county && $path==='/about') {
             $data['view']='county-home';
@@ -78,6 +83,7 @@ final class PublicSiteController
             $data['title']=$payload['content']['title'];$data['view']='article';
         } elseif ($section && ($section['kind'] ?? '')==='article') {
             $payload = $public->contentSlug($r, $section['record_type'] ?? 'page', $section['record_slug'] ?? 'official-page-'.$section['id'])->getData(true)['data'];
+            abort_if($county && ($payload['content']['organization_id']??null)!==$organization?->id,404);
             $data += $payload;$data['title']=$payload['content']['title'];$data['view']='article';
         } else {
             $types=['/news'=>'news','/announcements'=>'announcement','/resolutions'=>'resolution','/documents'=>'document','/regulations'=>'document','/investments'=>'publication','/tenders'=>'tender','/contracts'=>'contract','/calls'=>'call','/events'=>'event','/duties'=>'duty'];
@@ -123,7 +129,7 @@ final class PublicSiteController
             } elseif ($section) {
                 $data['items']=collect($ui->data('official-site')['pages'])->whereIn('id',$section['children']??[])->values()->all();
                 if (empty($data['items'])) {
-                    try {$data['content']=$public->contentSlug($r,'page','official-page-'.$section['id'])->getData(true)['data']['content'];$data['view']='article';$data['related']=[];$data['comments']=[];} catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {}
+                    try {$candidate=$public->contentSlug($r,'page','official-page-'.$section['id'])->getData(true)['data']['content'];if(!$county||($candidate['organization_id']??null)===$organization?->id){$data['content']=$candidate;$data['view']='article';$data['related']=[];$data['comments']=[];}} catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {}
                 }
             }
         }

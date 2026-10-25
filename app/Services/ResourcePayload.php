@@ -154,12 +154,28 @@ class ResourcePayload
             }
         }
         if ($sample instanceof Content) {
+            if (array_key_exists('portal_path', $data) || array_key_exists('portal_path', $data['metadata'] ?? [])) {
+                $path = array_key_exists('portal_path', $data) ? $data['portal_path'] : ($data['metadata']['portal_path'] ?? null);
+                if ($path) {
+                    abort_unless(($effective['type'] ?? '') === 'page' && \App\Models\Organization::whereKey($effective['organization_id'] ?? null)->where('type','county')->exists(), 422, 'محل نمایش فقط برای صفحه‌های همین پرتال فرمانداری است.');
+                    Validator::make(['portal_path'=>$path], ['portal_path'=>[Rule::in(array_keys(CountyPortal::pages()))]])->validate();
+                    if (Content::where('organization_id',$effective['organization_id'])->where('type','page')->where('locale',$effective['locale']??'fa')
+                        ->where('metadata->portal_path',$path)->when($model,fn($q)=>$q->whereKeyNot($model->id))->exists()) {
+                        throw ValidationException::withMessages(['portal_path'=>'برای این صفحه قبلاً مطلبی ثبت شده است؛ همان مطلب را ویرایش کنید.']);
+                    }
+                }
+                $data['metadata']=array_replace($model?->metadata??[], $data['metadata']??[], ['portal_path'=>$path]);
+                unset($data['portal_path']);
+            }
             if (array_key_exists('news_scope', $data)) {
                 if (($effective['type'] ?? '') !== 'news' && $data['news_scope'] !== null && $data['news_scope'] !== '') {
                     throw ValidationException::withMessages(['news_scope' => 'گروه اخبار فقط برای خبر قابل انتخاب است.']);
                 }
                 $data['metadata'] = array_replace($model?->metadata ?? [], $data['metadata'] ?? [], ['news_scope' => $data['news_scope'] ?: null]);
                 unset($data['news_scope']);
+            }
+            if (($effective['type'] ?? '') === 'news' && !$actor->hasGlobalAccess() && $actor->organization?->type === 'county') {
+                $data['metadata'] = array_replace($model?->metadata ?? [], $data['metadata'] ?? [], ['news_scope' => 'governorates']);
             }
             if (! empty($effective['show_in_slideshow']) && empty($effective['cover_media_id'])) {
                 throw ValidationException::withMessages(['cover_media_id' => 'برای نمایش این مطلب در اسلایدشو، تصویر شاخص را بارگذاری کنید یا تیک نمایش در اسلایدشو را بردارید.']);

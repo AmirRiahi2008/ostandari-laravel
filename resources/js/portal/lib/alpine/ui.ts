@@ -67,7 +67,7 @@ export function bindUi(
     const create = target.closest<HTMLElement>('#cbnOpenCreateMenuModalBtn');
     if (
       create &&
-      !(create.tagName === 'A' && create.getAttribute('href')?.startsWith('/panel/admin/'))
+      !(create.tagName === 'A' && /^\/(?:panel\/admin|county-admin\/[a-z0-9-]+)\//.test(create.getAttribute('href') ?? ''))
     ) {
       event.preventDefault();
       toggleModal(root, true);

@@ -1,6 +1,7 @@
 @php
+    $custom=$ui->image($organization['banner'] ?? null);
     $provided='/design/county-banners/'.$county['slug'].'.png';
-    $provided=is_file(public_path($provided))?$provided:null;
+    $provided=$custom ?? (is_file(public_path($provided))?$provided:null);
     $bannerTitle='فرمانداری شهرستان '.$county['name'];
 @endphp
 @if($provided)

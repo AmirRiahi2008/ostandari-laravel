@@ -25,6 +25,18 @@ final class Workspace
         }
     }
 
+    public static function assertCounty(User $user, ?string $slug = null): void
+    {
+        self::assertUser($user);
+        $context = self::context($user);
+        abort_unless($user->is_active && $user->isStaff() && $user->isPublicRelations() && $context['type'] === 'county', 403,
+            'این پنل فقط برای روابط عمومی همان فرمانداری است.');
+        if ($slug !== null) {
+            abort_unless(in_array($context['county']['slug'], CountySlugs::variants($slug), true), 403,
+                'حساب شما به فرمانداری انتخاب‌شده دسترسی ندارد.');
+        }
+    }
+
     /** A narrow exception to the provincial PR read-only workspace. */
     public static function mayManageAnnualSlogan(User $user): bool
     {
@@ -51,7 +63,7 @@ final class Workspace
             'can_write' => ! $user->hasReadOnlyWorkspace(), 'is_global' => $user->hasGlobalAccess(),
             'dashboard_path' => $slug ? '/county-admin/'.$slug : '/panel/admin',
             'login_path' => $slug ? '/county-admin/'.$slug.'/login' : '/panel/admin/login',
-            'public_path' => $slug ? '/office?name='.$slug : '/',
+            'public_path' => $slug ? '/'.$slug : '/',
         ];
     }
 

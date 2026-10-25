@@ -81,7 +81,22 @@ final class PortalView
 
     public function article(array $record, ?array $county = null): string
     {
+        if (!$county && ($record['organization']['type'] ?? null) === 'county') {
+            $county = $this->county($record['organization']['county']['slug'] ?? null);
+        }
         return $this->href((($record['type'] ?? null)==='duty' ? '/duties/' : '/content/').rawurlencode((string) $record['id']), $county);
+    }
+
+    public function adminHref(string $path, array $context): string
+    {
+        return $context['type'] === 'county'
+            ? preg_replace('~^/panel/admin(?=/|\?|$)~', $context['dashboard_path'], $path)
+            : $path;
+    }
+
+    public function menu(array $menus, string $key): ?array
+    {
+        return collect($menus)->firstWhere('key', $key);
     }
 
     public function countyTitle(string $title, ?array $county): string
@@ -102,7 +117,7 @@ final class PortalView
                 'children' => $convert($item['children'] ?? []),
             ], $items);
         };
-        $items = !empty($menu['items']) ? $convert($menu['items']) : $this->data('frontend')['officialNavigation']['main'];
+        $items = $menu ? $convert($menu['items'] ?? []) : $this->data('frontend')['officialNavigation']['main'];
         $scope = function (array $items) use (&$scope, $county): array {
             if($county)$items=array_values(array_filter($items,fn($item)=>!str_contains($item['href'],'/office?')));
             return array_map(fn ($item) => [...$item, 'title'=>$this->countyTitle($item['title'],$county), 'href' => $this->href($item['href'], $county), 'children' => $scope($item['children'] ?? [])], $items);

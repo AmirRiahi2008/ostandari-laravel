@@ -9,17 +9,23 @@ use Illuminate\Http\Request;
 
 final class AdminController
 {
-    public function county(Request $request, string $slug, PortalView $ui)
+    public function county(Request $request, string $slug, PortalView $ui, ?string $path = null)
     {
         $county=$ui->county($slug);$context=Workspace::context($request->user());
-        abort_unless($county && $context['type']==='county' && $context['county']['slug']===$county['slug'],403);
-        return $this->render($request, $ui, '/county-admin/'.$county['slug'], '/panel/admin');
+        abort_unless($county,404);
+        Workspace::assertCounty($request->user(), $county['slug']);
+        $suffix=$path?'/'.trim($path,'/'):'';
+        if($slug!==$county['slug'])return redirect('/county-admin/'.$county['slug'].$suffix.($request->getQueryString()?'?'.$request->getQueryString():''));
+        return $this->render($request, $ui, '/county-admin/'.$county['slug'].$suffix, '/panel/admin'.$suffix);
     }
 
     public function show(Request $request, PortalView $ui, ?string $path=null)
     {
         $full='/panel/admin'.($path?'/'.trim($path,'/'):'');
-        if ($full==='/panel/admin' && Workspace::context($request->user())['type']==='county') return redirect(Workspace::context($request->user())['dashboard_path']);
+        if (Workspace::context($request->user())['type']==='county') {
+            Workspace::assertCounty($request->user());
+            return redirect($ui->adminHref($full,Workspace::context($request->user())).($request->getQueryString()?'?'.$request->getQueryString():''));
+        }
         if ($full==='/panel/admin/organization-contact/new') return redirect('/panel/admin/organization-contact');
         return $this->render($request,$ui,$full,$full);
     }
@@ -31,25 +37,38 @@ final class AdminController
         if(preg_match('~^(/panel/admin/reports)/([^/]+)/edit$~',$modulePath,$report)){ $modulePath=$report[1];$reference=$report[2]; }
         elseif(preg_match('~^(.+)/(new)$~',$modulePath,$editor)){ $modulePath=$editor[1];$mode='create'; }
         elseif(preg_match('~^(.+)/([^/]+)/edit$~',$modulePath,$editor)){ $modulePath=$editor[1];$id=$editor[2];$mode='edit'; }
-        $module=collect($meta['modules'])->firstWhere('path',$modulePath);
+        $available=$meta['modules'];
+        if($context['type']==='county')$available[]=['path'=>'/panel/admin/portal','title'=>'ظاهر و اطلاعات پرتال','description'=>'معرفی شهرستان، تصاویر، اطلاعات تماس، منوها و نمایش بخش‌ها','section'=>'appearance','resource'=>'','permission'=>'organizations.manage','showInNavigation'=>true,'canCreate'=>false,'canEdit'=>true];
+        $module=collect($available)->firstWhere('path',$modulePath);
         if($module) abort_unless($ui->moduleAllowed($module,$user),403);
         $utility=['/panel/admin/account'=>'حساب کاربری','/panel/admin/logout'=>'خروج از مدیریت'];
         abort_unless($module || $modulePath==='/panel/admin' || isset($utility[$modulePath]),404);
         if($mode){
             abort_unless(!empty($module['page']),404);
-            if(!$context['can_write'])return redirect($modulePath);
+            if(!$context['can_write'])return redirect($ui->adminHref($modulePath,$context));
             abort_unless($mode==='create'?$module['canCreate']:$module['canEdit'],403);
             abort_if($mode==='create'&&!$context['is_global']&&in_array($module['resource'],['organizations','counties'],true),403);
         }
         $base=collect($meta['templates'])->firstWhere('path','/panel/admin');
         $page=$module['page'] ?? $base;
         $page=[...$page,'path'=>$path,'controller'=>'admin'];
-        if($mode)$page['editor']=['mode'=>$mode,'id'=>$id,'returnTo'=>$modulePath];
+        if($mode)$page['editor']=['mode'=>$mode,'id'=>$id,'returnTo'=>$ui->adminHref($modulePath,$context)];
         $title=$module['title'] ?? $utility[$modulePath] ?? ($context['type']==='county'?'داشبورد فرمانداری '.$context['county']['name']:'داشبورد استانداری');
+        if($context['type']==='county')$title=$ui->countyTitle($title,$context['county']);
         $content=$mode?'editor':($reference?'reports':($modulePath==='/panel/admin'?'dashboard':(!empty($module['page'])?'list':'utility')));
         if($modulePath==='/panel/admin/reports')$content='reports';
+        if($modulePath==='/panel/admin/portal')$content='county-portal';
         $stats=null;
         if($content==='dashboard'){abort_unless($user->hasPermission('dashboard.view'),403);$stats=app(SystemController::class)->dashboard($request)->getData(true)['data'];}
-        return view('admin.page',compact('page','path','modulePath','module','mode','id','reference','title','content','context','stats')+['user'=>$user,'modules'=>array_values(array_filter($meta['modules'],fn($m)=>$ui->moduleAllowed($m,$user)))]);
+        $moduleUrl=$ui->adminHref($modulePath,$context);
+        $modules=array_values(array_map(function($entry)use($ui,$context){
+            $entry['canonical_path']=$entry['path'];$entry['path']=$ui->adminHref($entry['path'],$context);
+            if($context['type']==='county'){
+                $entry['title']=$entry['canonical_path']==='/panel/admin/county-governors'?'فرماندار':$ui->countyTitle($entry['title'],$context['county']);
+                $entry['description']=$ui->countyTitle($entry['description'],$context['county']);
+            }
+            return $entry;
+        },array_filter($available,fn($m)=>$ui->moduleAllowed($m,$user))));
+        return view('admin.page',compact('page','path','modulePath','moduleUrl','module','mode','id','reference','title','content','context','stats','modules')+['user'=>$user]);
     }
 }

@@ -20,7 +20,7 @@ final class AuthPageController
 
     private function page(Request $request, string $mode, ?array $county = null)
     {
-        return view('auth.login', ['title' => $mode==='staff' ? 'ورود به پنل مدیریت' : ($mode==='register' ? 'ثبت‌نام شهروندان' : 'ورود شهروندان'), 'mode'=>$mode, 'county'=>$county]);
+        return view('auth.login', ['title' => $county ? 'ورود روابط عمومی فرمانداری '.$county['name'] : ($mode==='staff' ? 'ورود به پنل مدیریت' : ($mode==='register' ? 'ثبت‌نام شهروندان' : 'ورود شهروندان')), 'mode'=>$mode, 'county'=>$county]);
     }
 
     public function citizen(Request $request, PortalView $ui)

@@ -42,8 +42,7 @@ class AuthController
         }
         if ($user->isStaff()) Workspace::assertUser($user);
         if (isset($data['county_slug'])) {
-            $context = Workspace::context($user);
-            abort_unless($user->isStaff() && $context['type'] === 'county' && in_array($context['county']['slug'], CountySlugs::variants($data['county_slug']), true), 403, 'این حساب اجازهٔ ورود به فرمانداری انتخاب‌شده را ندارد.');
+            Workspace::assertCounty($user, $data['county_slug']);
         }
         $user->update(['last_login_at' => now()]);
         Audit::record('auth.login', $user);

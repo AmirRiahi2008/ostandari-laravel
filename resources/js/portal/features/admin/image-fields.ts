@@ -149,6 +149,8 @@ export function mountImageFields(root: HTMLElement, signal: AbortSignal, preview
             cover_media_id: 'cover',
             banner_media_id: 'banner',
             aerial_media_id: 'aerial',
+            logo_media_id: 'logo',
+            slogan_media_id: 'slogan',
           } as Record<string, string>
         )[field];
         const media = record[relation] as RecordData | null;

@@ -4,8 +4,11 @@ import { adminUtilityTitles } from '@/data/admin/utility-pages';
 import { templates } from '@/lib/templates';
 import { contextualFilters } from '@/features/admin/relations';
 import type { TemplatePage } from '@/types/portal';
+import { canonicalAdminPath } from './workspace-routes';
 
 export function adminResourcePage(path: string): TemplatePage | undefined {
+  const requested = path;
+  path = canonicalAdminPath(path);
   const module = adminModules.find((item) => item.path === path);
   if (!module?.resource || adminUtilityTitles[path]) return;
   const page = adminExtraPages[path]
@@ -18,6 +21,7 @@ export function adminResourcePage(path: string): TemplatePage | undefined {
   return page
     ? {
         ...page,
+        path: requested,
         title: module.title,
         defaults: {
           ...page.defaults,
@@ -36,7 +40,7 @@ export function safeAdminReturn(base: string, value?: string | null): string {
     const url = new URL(value, 'https://admin.invalid');
     if (url.origin !== 'https://admin.invalid' || url.pathname !== base) return base;
     const query = new URLSearchParams(contextualFilters(url.search));
-    if (base === '/panel/admin/reports') {
+    if (canonicalAdminPath(base) === '/panel/admin/reports') {
       for (const key of ['status', 'type', 'urgency', 'order', 'overdue']) {
         const value = url.searchParams.get(key);
         if (value && /^[a-z0-9_]{1,30}$/.test(value)) query.set(key, value);

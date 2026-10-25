@@ -85,6 +85,9 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
             Route::post('notifications/{id}/read', [SystemController::class, 'markRead'])->where('id', '[0-9a-fA-F-]{36}');
         });
         Route::prefix('admin')->middleware(['staff', 'portal'])->group(function () {
+            Route::get('county-portal', [\App\Http\Controllers\Api\CountyPortalController::class, 'show']);
+            Route::put('county-portal', [\App\Http\Controllers\Api\CountyPortalController::class, 'update']);
+            Route::post('county-portal/menus', [\App\Http\Controllers\Api\CountyPortalController::class, 'menu']);
             Route::get('resources', [SystemController::class, 'schema']);
             Route::get('lookups/{resource}', [LookupController::class, 'index']);
             Route::get('dashboard', [SystemController::class, 'dashboard'])->middleware('permission:dashboard.view');

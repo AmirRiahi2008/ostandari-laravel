@@ -14,10 +14,13 @@ import { mountPermissionFields } from './permission-fields';
 import { contextualFilters, relatedAdminLinks } from './relations';
 import { ticketTransitions } from '@/data/ticket-status';
 import { adminEditorHref } from '@/lib/admin-routes';
+import { canonicalAdminPath, workspaceAdminHref } from '@/lib/workspace-routes';
+import { mountCountyPortal } from './county-portal';
 
 export function adminController(context: PageContext) {
   const { root, page, signal, preview } = context;
-  const itemName = adminModuleCopy(page.path, page.resource, page.title).itemName;
+  const itemName = adminModuleCopy(canonicalAdminPath(page.path), page.resource, page.title).itemName;
+  const workspaceHref = (path: string) => workspaceAdminHref(root.dataset.workspaceHome ?? '/panel/admin', path);
   const readOnly = root.dataset.canWrite === 'false';
   const ownOrganization =
     root.dataset.workspaceGlobal === 'false' &&
@@ -205,7 +208,7 @@ export function adminController(context: PageContext) {
           );
         });
       all<HTMLAnchorElement>(row, '[data-related-resource="menu-items"]').forEach((link) => {
-        link.href = '/panel/admin/menu-items?menu_id=' + encodeURIComponent(String(record.id));
+        link.href = workspaceHref('/panel/admin/menu-items?menu_id=' + encodeURIComponent(String(record.id)));
       });
       all<HTMLAnchorElement>(row, '[data-download-media]').forEach((link) => {
         link.href = '/web-api/v1/media/' + encodeURIComponent(String(record.id)) + '/download';
@@ -223,7 +226,7 @@ export function adminController(context: PageContext) {
             navigation.className = 'portal-admin-related';
             for (const item of links) {
               const link = document.createElement('a');
-              link.href = item.href;
+              link.href = workspaceHref(item.href);
               link.textContent = item.label;
               navigation.append(link);
             }
@@ -776,7 +779,9 @@ export function adminController(context: PageContext) {
         signal.addEventListener('abort', () => notice.remove(), { once: true });
       }
     }
-    if (!listPages) {
+    const countyPortal=one(root,'[data-county-portal-form]');
+    if(countyPortal)mountCountyPortal(root,signal);
+    if (!listPages && !countyPortal) {
       imageFields ??= mountImageFields(root, signal, preview);
       mountRichText(root, signal, preview);
       mountFormBuilder(root, signal);
@@ -892,7 +897,7 @@ export function adminController(context: PageContext) {
     all<HTMLElement>(root, '.bigitem-menu-bottom-item').forEach((item) => {
       const label = item.textContent?.trim();
       if (label === 'خروج') item.setAttribute('data-admin-logout', 'true');
-      else if (label === 'تنظیمات حساب') item.setAttribute('data-navigate', '/panel/admin/account');
+      else if (label === 'تنظیمات حساب') item.setAttribute('data-navigate', workspaceHref('/panel/admin/account'));
       else if (label === 'وظایف') item.setAttribute('data-navigate', '/duties');
       if (label === 'خروج' || label === 'تنظیمات حساب' || label === 'وظایف') {
         item.setAttribute('role', 'button');
@@ -908,10 +913,10 @@ export function adminController(context: PageContext) {
           void load(currentQuery, Number(paging.dataset.adminPage)).catch((error) =>
             feedback(root, error.message),
           );
-        if (target.closest('[data-admin-logout],a[href="/panel/admin/logout"]')) {
+        if (target.closest('[data-admin-logout],a[href="'+workspaceHref('/panel/admin/logout')+'"]')) {
           event.preventDefault();
           void import('@/components/admin/account')
-            .then((module) => module.logoutAdmin(preview))
+            .then((module) => module.logoutAdmin(preview,loginPath))
             .catch((error) => feedback(root, error.message));
         }
       },

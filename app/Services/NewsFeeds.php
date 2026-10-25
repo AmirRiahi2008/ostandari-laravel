@@ -13,14 +13,20 @@ final class NewsFeeds
     public static function apply(Builder $query, string $scope): Builder
     {
         $root = Organization::active()->where('type', 'governorate')->value('id');
+        // The publishing organization determines this feed, including imported news
+        // whose old metadata names another group.
+        if ($scope === 'governorates') {
+            return $query->where('type', 'news')->whereHas('organization', fn (Builder $org) => $org->active()->where('type', 'county')
+                ->whereHas('county', fn (Builder $county) => $county->active()));
+        }
+        if ($scope === 'province') {
+            $query->where(fn (Builder $org) => $org->where('organization_id', $root)->orWhereNull('organization_id'));
+        }
         return $query->where('type', 'news')->where(function (Builder $feed) use ($scope, $root) {
             $feed->where('metadata->news_scope', $scope);
             if ($scope === 'province') {
                 $feed->orWhere(fn (Builder $old) => $old->whereNull('metadata->news_scope')
                     ->where(fn (Builder $org) => $org->where('organization_id', $root)->orWhereNull('organization_id')));
-            } elseif ($scope === 'governorates') {
-                $feed->orWhere(fn (Builder $old) => $old->whereNull('metadata->news_scope')
-                    ->whereHas('organization', fn (Builder $org) => $org->active()->where('type', 'county')));
             }
         });
     }
@@ -29,7 +35,7 @@ final class NewsFeeds
     {
         $feeds = [];
         foreach (self::LABELS as $scope => $_) {
-            $query = Content::visible()->where('locale', $locale)->with(['cover', 'category'])
+            $query = Content::visible()->where('locale', $locale)->with(['cover', 'category', 'organization.county'])
                 ->where(fn (Builder $org) => $org->whereNull('organization_id')
                     ->orWhereHas('organization', fn (Builder $organization) => $organization->active()));
             if ($organizationId !== null) $query->where('organization_id', $organizationId);

@@ -132,7 +132,7 @@ Alpine.data('accountForm',()=>({
   busy:false,error:'',message:'',name:'',email:'',current_password:'',password:'',password_confirmation:'',
   async init(){try{const u=(await api<any>('auth/me')).data;this.name=u.name;this.email=u.email??'';}catch(e){this.error=(e as Error).message;}},
   async saveProfile(){this.busy=true;try{await post('auth/profile',{name:this.name,email:this.email||null},'PATCH');this.message='مشخصات ذخیره شد.';}catch(e){this.error=(e as Error).message;}finally{this.busy=false;}},
-  async savePassword(){this.busy=true;try{await post('auth/password',{current_password:this.current_password,password:this.password,password_confirmation:this.password_confirmation},'PUT');await post('auth/logout',{});location.assign('/panel/admin/login');}catch(e){this.error=(e as Error).message;}finally{this.busy=false;}}
+  async savePassword(){this.busy=true;try{await post('auth/password',{current_password:this.current_password,password:this.password,password_confirmation:this.password_confirmation},'PUT');await post('auth/logout',{});location.assign(document.querySelector<HTMLElement>('[data-workspace-login]')?.dataset.workspaceLogin??'/panel/admin/login');}catch(e){this.error=(e as Error).message;}finally{this.busy=false;}}
 }));
 
 Alpine.data('reportsPanel',()=>({

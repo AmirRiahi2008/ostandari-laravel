@@ -37,7 +37,7 @@ final class CreatePublicRelations extends Command
         }
         User::create($validator->validated() + ['role_id' => $role->id, 'organization_id' => $organization->id, 'person_type' => 'staff', 'access_scope' => 'organization', 'is_active' => true]);
         $this->info('Account created for '.$organization->name.'. Password was not printed.');
-        $this->line($county ? '/county-admin/'.CountySlugs::variants($county->slug)[0].'/login' : '/admin/login');
+        $this->line($county ? '/county-admin/'.CountySlugs::variants($county->slug)[0].'/login' : '/panel/admin/login');
         return self::SUCCESS;
     }
 }

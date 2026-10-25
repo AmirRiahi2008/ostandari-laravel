@@ -53,8 +53,16 @@ class PublicController
                 'url' => '/content/'.$content->id, 'organization_id' => $content->organization_id,
             ]);
 
+        $settings = Setting::where('is_public', true)->whereIn('key', config('portal.public_settings'))->pluck('value', 'key')->all();
+        $countyPortal = $slug && $org?->type === 'county' ? \App\Services\CountyPortal::publicData($org) : null;
+        if ($countyPortal) {
+            $settings['site.name'] = $countyPortal['title'];
+            if ($countyPortal['logo']) $settings['site.logo'] = $countyPortal['logo'];
+            if ($countyPortal['slogan']) $settings['site.slogan'] = $countyPortal['slogan'];
+            if ($countyPortal['slogan_text'] !== null) $settings['site.slogan_text'] = $countyPortal['slogan_text'];
+        }
         return Api::ok([
-            'organization' => $org, 'settings' => Setting::where('is_public', true)->whereIn('key', config('portal.public_settings'))->pluck('value', 'key'),
+            'organization' => $org, 'settings' => $settings, 'county_portal'=>$countyPortal,
             'menus' => $this->menuData($locale, null, $org?->id), 'slides' => $slides->toBase()->concat($promoted)->values(),
             'advertisements' => Slide::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->inWindow()->where('kind', 'advertisement')->where('locale', $locale)->with('image')->orderBy('priority')->get(),
             'news_feeds' => \App\Services\NewsFeeds::home($locale, $slug ? $org?->id : null),
@@ -78,7 +86,10 @@ class PublicController
 
     private function menuData(string $locale, ?string $key = null, ?int $organizationId = null)
     {
-        return Menu::active()->where(fn ($q) => $q->where('organization_id', $organizationId)->when($organizationId === Organization::where('type', 'governorate')->value('id'), fn ($q) => $q->orWhereNull('organization_id')))->where('locale', $locale)->when($key, fn ($q) => $q->where('key', $key))->get()->map(function ($menu) {
+        $county = Organization::whereKey($organizationId)->where('type','county')->exists();
+        return Menu::where(fn($q)=>$q->where('is_active',true)->when($county,fn($q)=>$q->orWhereIn('key',array_column(\App\Services\CountyPortal::MENUS,0))))
+            ->where(fn ($q) => $q->where('organization_id', $organizationId)->when($organizationId === Organization::where('type', 'governorate')->value('id'), fn ($q) => $q->orWhereNull('organization_id')))->where('locale', $locale)->when($key, fn ($q) => $q->where('key', $key))->get()->map(function ($menu) {
+            if(!$menu->is_active)return ['key'=>$menu->key,'items'=>[]];
             $items = MenuItem::active()->where('menu_id', $menu->id)->orderBy('priority')->get();
             $visibleContentIds = Content::visible()->whereIn('id', $items->pluck('content_id')->filter())->pluck('id');
             $items = $items->filter(fn ($item) => ! $item->content_id || $visibleContentIds->contains($item->content_id));
@@ -93,7 +104,7 @@ class PublicController
     public function contents(Request $r, ?string $type = null)
     {
         $r->validate(['type' => ['sometimes', Rule::in(config('portal.content_types'))], 'q' => 'sometimes|string|max:200', 'per_page' => 'sometimes|integer|min:1|max:100', 'category_id' => 'sometimes|integer', 'organization_id' => 'sometimes|integer', 'tag_id' => 'sometimes|integer', 'news_scope' => ['sometimes', Rule::in(array_keys(\App\Services\NewsFeeds::LABELS))]]);
-        $q = Content::visible()->where('locale', $this->locale($r))->with('cover', 'category', 'author', 'tags');
+        $q = Content::visible()->where('locale', $this->locale($r))->with('cover', 'category', 'author', 'tags', 'organization.county');
         if (! $r->filled('organization_id') && !$r->filled('news_scope')) {
             $root = Organization::active()->where('type', 'governorate')->value('id');
             $q->where(fn ($q) => $q->where('organization_id', $root)->orWhereNull('organization_id'));

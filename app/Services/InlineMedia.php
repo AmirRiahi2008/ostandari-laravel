@@ -16,6 +16,11 @@ class InlineMedia
     {
         $attributes = $model->getAttributes();
         $html = implode('\n', array_intersect_key($attributes, array_flip(['body', 'description', 'bio', 'answer'])));
+        self::syncHtml($model, $actor, $html);
+    }
+
+    public static function syncHtml(Model $model, User $actor, string $html, int $limit = 20): void
+    {
         $paths = [];
         $base = rtrim(Storage::disk('public')->url(''), '/');
         $prefix = rtrim(parse_url($base, PHP_URL_PATH) ?: '/storage', '/').'/';
@@ -37,8 +42,8 @@ class InlineMedia
             libxml_use_internal_errors($previous);
         }
         $paths = array_values(array_unique($paths));
-        if (count($paths) > 20) {
-            throw ValidationException::withMessages(['body' => 'حداکثر ۲۰ تصویر در متن مجاز است.']);
+        if (count($paths) > $limit) {
+            throw ValidationException::withMessages(['body' => 'تعداد تصاویر متن بیش از حد مجاز است.']);
         }
         $files = Media::whereIn('path', $paths)->where('disk', 'public')->where('visibility', 'public')->lockForUpdate()->get();
         if ($files->count() !== count($paths)) {

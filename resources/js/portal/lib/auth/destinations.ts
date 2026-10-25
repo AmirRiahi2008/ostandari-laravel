@@ -1,4 +1,5 @@
 import type { PortalUser } from '@/types/portal';
+import { countyReturn } from '../workspace-routes';
 
 export const ADMIN_HOME = '/panel/admin';
 export const ADMIN_LOGIN = '/panel/admin/login';
@@ -10,7 +11,7 @@ export function adminDestination(user: PortalUser, requested?: string | null): s
   if (workspace?.type === 'county') {
     const slug = workspace.county?.slug;
     if (!slug || !/^[a-z0-9-]+$/.test(slug)) throw new Error('فرمانداری این حساب مشخص نیست.');
-    return '/county-admin/' + slug;
+    return countyReturn('/county-admin/' + slug, requested);
   }
   if (!requested || /[\\\u0000-\u001f\u007f]/.test(requested)) return ADMIN_HOME;
   try {

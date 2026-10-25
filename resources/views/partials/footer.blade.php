@@ -36,8 +36,11 @@
 </defs>
 </svg>
 </div>
-<footer class="icx-footer-root" aria-label="پاورقی استانداری مازندران">
+<footer class="icx-footer-root" aria-label="{{ $county?'پاورقی فرمانداری '.$county['name']:'پاورقی استانداری مازندران' }}">
 <div class="icx-footer-wrap">
+@if($county&&($footerMenu=$ui->menu($home['menus']??[],'portal-footer'))!==null)
+@include('partials.county-footer-links',['entries'=>$footerMenu['items']??[]])
+@else
 <nav class="icx-footer-col" aria-label="سایت">
 <h4 class="icx-footer-title">سایت</h4>
 <ul class="icx-footer-list">
@@ -79,7 +82,8 @@
 <a class="icx-footer-link" href="{{ $ui->href('/service-agreement/statement',$county) }}">بیانیه سطح توافق خدمات</a>
 </li>
 </ul>
-</nav>@php($contact=$county?($organization??[]):($settings['site.contact']??$ui->data('official-site')['contact']))<address class="icx-footer-col icx-footer-contact">
+</nav>@endif
+@php($contact=$county?($organization??[]):($settings['site.contact']??$ui->data('official-site')['contact']))<address class="icx-footer-col icx-footer-contact">
 <h4 class="icx-footer-title">{{ $county?'فرمانداری '.$county['name']:'اطلاعات تماس' }}</h4>@foreach(['address'=>'نشانی','email'=>'ایمیل','phone'=>'تلفن','fax'=>'نمابر'] as $key=>$label)@if(!empty($contact[$key]))<p class="icx-footer-text">
 <span>{{ $label }}: </span>
 <bdi>{{ $contact[$key] }}</bdi>
