@@ -64,7 +64,9 @@ final class CountyWorkspaceTest extends TestCase
     {
         $this->as($this->amol);
         $ui=app(PortalView::class);
-        $this->get('/county-admin/amol')->assertOk()->assertSee('داشبورد فرمانداری آمل');
+        $this->get('/county-admin/amol')->assertOk()->assertSee('داشبورد فرمانداری آمل')
+            ->assertDontSee('مدیریت محتوای سازمان و پیگیری خدمات مردمی')
+            ->assertDontSee('خبرهای همین سازمان')->assertDontSee('استانداری و سازمان‌ها');
         foreach ($ui->data('frontend')['modules'] as $module) {
             if(!$ui->moduleAllowed($module,$this->amol))continue;
             $url=$ui->adminHref($module['path'],Workspace::context($this->amol));
@@ -72,10 +74,16 @@ final class CountyWorkspaceTest extends TestCase
             if($module['page']??false){
                 $document=new \DOMDocument;@$document->loadHTML($response->getContent());
                 foreach ($document->getElementsByTagName('a') as $anchor) $this->assertFalse(str_starts_with($anchor->getAttribute('href'),'/panel/admin'),$url.' retained central link '.$anchor->getAttribute('href'));
-                if($module['canCreate']&&!in_array($module['resource'],['organizations','counties'],true))$this->get($url.'/new')->assertOk();
+                if($module['canCreate']&&!in_array($module['resource'],['organizations','counties'],true)){
+                    $form=$this->get($url.'/new')->assertOk()->assertDontSee('data-editor-field="organization_id"',false);
+                    $fields=new \DOMDocument;@$fields->loadHTML($form->getContent());
+                    foreach ((new \DOMXPath($fields))->query('//label|//th|//summary') as $label)$this->assertStringNotContainsString('سازمان',$label->textContent,$url.' retained a generic organization label');
+                }
             }
         }
         $this->get('/county-admin/amol/pages/new')->assertOk()->assertSee('data-field="portal_path"',false);
+        $this->as(User::where('username','admin')->firstOrFail());
+        $this->get('/panel/admin/news/new')->assertOk()->assertSee('data-editor-field="organization_id"',false);
     }
 
     public function test_provincial_and_non_pr_accounts_cannot_use_county_login_or_settings(): void

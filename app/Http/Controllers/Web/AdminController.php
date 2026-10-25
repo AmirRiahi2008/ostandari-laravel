@@ -41,6 +41,7 @@ final class AdminController
         if($context['type']==='county')$available[]=['path'=>'/panel/admin/portal','title'=>'ظاهر و اطلاعات پرتال','description'=>'معرفی شهرستان، تصاویر، اطلاعات تماس، منوها و نمایش بخش‌ها','section'=>'appearance','resource'=>'','permission'=>'organizations.manage','showInNavigation'=>true,'canCreate'=>false,'canEdit'=>true];
         $module=collect($available)->firstWhere('path',$modulePath);
         if($module) abort_unless($ui->moduleAllowed($module,$user),403);
+        if($module && $context['type']==='county')$module=$this->countyModule($module,$ui,$context['county']);
         $utility=['/panel/admin/account'=>'حساب کاربری','/panel/admin/logout'=>'خروج از مدیریت'];
         abort_unless($module || $modulePath==='/panel/admin' || isset($utility[$modulePath]),404);
         if($mode){
@@ -64,11 +65,26 @@ final class AdminController
         $modules=array_values(array_map(function($entry)use($ui,$context){
             $entry['canonical_path']=$entry['path'];$entry['path']=$ui->adminHref($entry['path'],$context);
             if($context['type']==='county'){
-                $entry['title']=$entry['canonical_path']==='/panel/admin/county-governors'?'فرماندار':$ui->countyTitle($entry['title'],$context['county']);
-                $entry['description']=$ui->countyTitle($entry['description'],$context['county']);
+                $entry=$this->countyModule($entry,$ui,$context['county']);
             }
             return $entry;
         },array_filter($available,fn($m)=>$ui->moduleAllowed($m,$user))));
         return view('admin.page',compact('page','path','modulePath','moduleUrl','module','mode','id','reference','title','content','context','stats','modules')+['user'=>$user]);
+    }
+
+    private function countyModule(array $module, PortalView $ui, array $county): array
+    {
+        $label=fn($text)=>str_replace(['سمت سازمانی','واحد سازمانی','سازمان‌ها','سازمان'],['سمت','واحد','فرمانداری‌ها','فرمانداری'],$ui->countyTitle($text,$county));
+        $path=$module['canonical_path']??$module['path'];
+        $module['title']=match($path){
+            '/panel/admin/county-governors'=>'فرماندار',
+            '/panel/admin/organizations'=>'اطلاعات فرمانداری',
+            '/panel/admin/organization-contact'=>'اطلاعات تماس',
+            default=>$label($module['title']),
+        };
+        $module['description']='';
+        if(isset($module['itemName']))$module['itemName']=$label($module['itemName']);
+        if(isset($module['columns']))$module['columns']=array_map(fn($column)=>[...$column,'label'=>$label($column['label'])],$module['columns']);
+        return $module;
     }
 }

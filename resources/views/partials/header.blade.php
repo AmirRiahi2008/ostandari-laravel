@@ -41,9 +41,10 @@
                     <div class="mega-menu" id="source-services-menu" role="region" aria-label="خدمات و بخش‌های {{ $portalName }}" x-show="mega" x-cloak>
                         <ul class="categories">@foreach($categories as $i=>$item)<li :class="{'active':category==={{ $i }}}" @mouseenter="category={{ $i }}"><button type="button" @if($i===0)x-ref="firstCategory"@endif @focus="category={{ $i }}" @click="category={{ $i }}" :aria-expanded="category==={{ $i }}" aria-controls="source-submenu-{{ $i }}"><span class="category-text">{{ $local($item['href'])==='/services' ? 'خدمات الکترونیکی' : $item['title'] }}</span>@include('icons.arrow')</button></li>@endforeach</ul>
                         <div class="submenus">@foreach($categories as $i=>$item)<div class="submenu {{ $i===0 ? 'active' : '' }}" :class="{'active':category==={{ $i }}}" x-show="category==={{ $i }}" id="source-submenu-{{ $i }}">
-                            <div class="source-mega-heading"><div><h2>{{ $item['title'] }}</h2></div><a href="{{ $item['href'] }}">مشاهدهٔ بخش ←</a></div>
+                            <div class="source-mega-heading"><h2>{{ $item['title'] }}</h2></div>
                             @include('partials.mega-branch',['branch'=>$item])
                         </div>@endforeach</div>
+                        <footer class="source-mega-footer">@foreach($categories as $i=>$item)<a href="{{ $item['href'] }}" x-show="category==={{ $i }}">مشاهدهٔ همهٔ {{ $item['title'] }} @include('icons.arrow')</a>@endforeach</footer>
                     </div>
                 </div>
                 @endif
@@ -54,8 +55,13 @@
                 @foreach(['/about'=>'about','/managers'=>'people'] as $href=>$icon)
                     @php($item=$rootLink($href))
                     @if($item)<div class="menu-item source-direct-menu" x-data="{open:false,timer:null}" :class="{'is-open':open}" @mouseenter="clearTimeout(timer);open=true;mega=false" @mouseleave="timer=setTimeout(()=>open=false,240)" @focusin="open=true;mega=false" @focusout="if(!$el.contains($event.relatedTarget))open=false" @click.outside="open=false" @keydown.escape.prevent.stop="open=false">
-                        <div class="rast">@include('icons.'.$icon)<a href="{{ $item['href'] }}">{{ $item['title'] }}</a><button class="source-direct-toggle" type="button" aria-label="زیرمنوی {{ $item['title'] }}" :aria-expanded="open" @click="open=true">⌄</button></div>
-                        @if(!empty($item['children']))<div class="source-direct-panel" x-show="open" x-cloak><div class="source-mega-heading"><div><h2>{{ $item['title'] }}</h2></div><a href="{{ $item['href'] }}">مشاهدهٔ همه ←</a></div><div class="source-direct-grid">@foreach($item['children'] as $child)<div><a class="source-direct-title" href="{{ $child['href'] }}">{{ $child['title'] }} ←</a>@foreach($child['children'] ?? [] as $link)<a class="source-direct-child" href="{{ $link['href'] }}">{{ $link['title'] }}</a>@endforeach</div>@endforeach</div></div>@endif
+                        <div class="rast">@include('icons.'.$icon)<a href="{{ $item['href'] }}">{{ $item['title'] }}</a><button class="source-direct-toggle" type="button" aria-label="زیرمنوی {{ $item['title'] }}" :aria-expanded="open" @click="open=true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>
+                        @if(!empty($item['children']))
+                            <div class="source-direct-panel" x-show="open" x-cloak>
+                                <aside class="source-mega-feature"><span class="source-mega-feature-icon">@include('icons.'.$icon)</span><h2>{{ $item['title'] }}</h2><a href="{{ $item['href'] }}">مشاهدهٔ همه @include('icons.arrow')</a></aside>
+                                <div class="source-direct-grid">@foreach($item['children'] as $child)<div><a class="source-direct-title" href="{{ $child['href'] }}"><span>{{ $child['title'] }}</span>@include('icons.arrow')</a>@foreach($child['children'] ?? [] as $link)<a class="source-direct-child" href="{{ $link['href'] }}">{{ $link['title'] }}</a>@endforeach</div>@endforeach</div>
+                            </div>
+                        @endif
                     </div>@endif
                 @endforeach
                 @if($countySections['nav_agreement']??true)<div class="menu-item"><div class="rast">@include('icons.agreement')<a href="{{ $ui->href('/service-agreement',$county) }}">توافق خدمات</a></div></div>@endif
