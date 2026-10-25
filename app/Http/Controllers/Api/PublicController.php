@@ -71,7 +71,7 @@ class PublicController
             'resolutions' => $contents()->where('type', 'resolution')->latest('published_at')->limit(6)->get(),
             'events' => $contents()->where('type', 'event')->latest('published_at')->limit(6)->get(),
             'governor' => Member::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->where('kind', $slug && $org?->type === 'county' ? 'county_governor' : 'governor')->where('is_current', true)->with('image')->orderBy('priority')->first(),
-            'members' => Member::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->where('locale', $locale)->with('image')->orderBy('priority')->limit(30)->get()->groupBy('kind'),
+            'members' => Member::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->where('locale', $locale)->with(['image','category'])->orderBy('priority')->get()->groupBy('kind'),
             'counties' => County::active()->orderBy('priority')->get(),
             'links' => Link::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->where('locale', $locale)->with('image')->orderBy('priority')->get(),
             'galleries' => Gallery::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->published()->where('locale', $locale)->with('items')->latest('published_at')->limit(6)->get(),
@@ -200,6 +200,13 @@ class PublicController
         }
         if (isset($def['rules']['priority'])) {
             $q->orderBy('priority');
+        }
+
+        if($resource==='members' && $r->filled('member_group')){
+            $r->validate(['member_group'=>['required',Rule::in(['1','2','3','4','5','6'])],'page'=>'sometimes|integer|min:1|max:100000']);
+            $people=app(\App\Services\PortalView::class)->membersForGroup($q->orderBy('id')->get()->toArray(),$r->string('member_group')->toString());
+            $perPage=$r->integer('per_page',24);$page=$r->integer('page',1);
+            return Api::page(new \Illuminate\Pagination\LengthAwarePaginator(array_slice($people,($page-1)*$perPage,$perPage),count($people),$perPage,$page));
         }
 
         return Api::page($q->orderByDesc('id')->paginate((int) $r->input('per_page', 30)));

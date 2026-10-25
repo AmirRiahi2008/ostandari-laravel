@@ -92,13 +92,24 @@ final class PublicSiteController
                 $result=$public->contents($r,$types[$path] ?? ['news'=>'news','documents'=>'document','tenders'=>'tender'][$kind])->getData(true);
                 $data['items']=$county&&!$organization ? [] : $result['data'];$data['meta']=$result['meta'];$data['view']=$path==='/duties'?'duties':($path==='/events'?'events':'collection');
             } elseif (in_array($path,['/managers','/governors','/deputies'],true) || in_array($kind,['managers','governors'],true)) {
-                $group=(string)($section['group'] ?? $request->query('group','1'));
+                $group=(string)($section['group'] ?? $request->query('group',$path==='/deputies'?'2':'1'));
                 $memberKind=$path==='/governors'||$kind==='governors'?'governor':($group==='4'?'county_governor':($group==='6'?'advisor':'manager'));
                 if ($county) $memberKind=$path==='/governors'?'county_governor':$memberKind;
-                $rq=$r->duplicate([...$query,'kind'=>$request->query('kind',$memberKind),'per_page'=>100]);
-                $data['items']=$county&&!$organization?[]:$public->catalog($rq,'members')->getData(true)['data'];
-                if ($request->filled('person')) $data['items']=array_values(array_filter($data['items'],fn($p)=>(string)$p['id']===$request->query('person')));
-                if (!in_array($memberKind,['governor','county_governor'],true)) $data['items']=$ui->membersForGroup($data['items'],$group);$data['view']='members';
+                if($request->filled('person')){
+                    $request->validate(['person'=>'required|integer|min:1']);
+                    $profileQuery=array_diff_key($query,array_flip(['kind','member_group','group','page','per_page','category_id','county_id','q','person']));
+                    $person=$public->catalogShow($r->duplicate($profileQuery),$request->integer('person'),'members')->getData(true)['data'];
+                    $owner=$organization?->id??($home['organization']['id']??null);
+                    abort_unless(($person['organization_id']??null)===$owner || !$county && empty($person['organization_id']),404);
+                    $data['items']=[$person];$data['title']=$person['name'];
+                }else{
+                    $memberQuery=[...$query,'kind'=>$request->query('kind',$memberKind),'per_page'=>24];
+                    if($memberKind!=='governor' && !($county && $path==='/governors'))$memberQuery['member_group']=$group;
+                    $result=$county&&!$organization?['data'=>[],'meta'=>null]:$public->catalog($r->duplicate($memberQuery),'members')->getData(true);
+                    $data['items']=$result['data'];$data['meta']=$result['meta'];
+                    if($path!=='/governors')$data['title']=collect($meta['managerGroups'])->firstWhere('group',$group)['title']??$data['title'];
+                }
+                $data['view']='members';
             } elseif (in_array($path,['/services','/services/provincial','/links','/gallery','/forms','/faq','/polls','/polls/site'],true) || in_array($kind,['services','links','faqs','polls'],true) || ($dynamic && in_array($match[1],['service','forms'],true))) {
                 $resource=$dynamic ? ($match[1]==='service'?'services':'forms') : (['/gallery'=>'galleries','/faq'=>'faqs','/services/provincial'=>'services','/polls/site'=>'polls'][$path] ?? ltrim($path,'/'));
                 if ($section && in_array($kind,['services','links','faqs','polls'],true)) $resource=$kind;
