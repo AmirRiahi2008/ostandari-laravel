@@ -63,6 +63,7 @@ class PublicController
         }
         return Api::ok([
             'organization' => $org, 'settings' => $settings, 'county_portal'=>$countyPortal,
+            'custom_pages' => \App\Services\CustomPages::published($org?->id),
             'menus' => $this->menuData($locale, null, $org?->id), 'slides' => $slides->toBase()->concat($promoted)->values(),
             'advertisements' => Slide::where(fn ($q) => $q->where('organization_id', $org?->id)->when(! $slug, fn ($q) => $q->orWhereNull('organization_id')))->active()->inWindow()->where('kind', 'advertisement')->where('locale', $locale)->with('image')->orderBy('priority')->get(),
             'news_feeds' => \App\Services\NewsFeeds::home($locale, $slug ? $org?->id : null),
@@ -97,7 +98,7 @@ class PublicController
                 return $depth > 20 ? [] : $items->where('parent_id', $parent)->map(fn ($item) => [...$item->toArray(), 'children' => $tree($item->id, $depth + 1)])->values()->all();
             };
 
-            return [...$menu->toArray(), 'items' => $tree()];
+            return [...$menu->toArray(), 'items' => \App\Services\RetiredSections::entries($tree())];
         });
     }
 

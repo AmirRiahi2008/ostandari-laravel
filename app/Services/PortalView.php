@@ -11,7 +11,14 @@ final class PortalView
 
     public function data(string $name): array
     {
-        return $this->files[$name] ??= json_decode(file_get_contents(resource_path('data/'.$name.'.json')), true, 512, JSON_THROW_ON_ERROR);
+        if (isset($this->files[$name])) return $this->files[$name];
+        $data=json_decode(file_get_contents(resource_path('data/'.$name.'.json')), true, 512, JSON_THROW_ON_ERROR);
+        if ($name==='frontend') {
+            $data['officialSections']=RetiredSections::entries($data['officialSections']);
+            $data['officialNavigation']['main']=RetiredSections::entries($data['officialNavigation']['main']);
+            foreach(array_keys($data['publicTitles']) as $path)if(RetiredSections::path($path))unset($data['publicTitles'][$path]);
+        }
+        return $this->files[$name]=$data;
     }
 
     public function county(?string $name): ?array
@@ -30,7 +37,7 @@ final class PortalView
             parse_str(parse_url($path,PHP_URL_QUERY) ?? '',$query);
             if($destination=$this->county($query['name']??null)) return '/'.$destination['slug'].(($query['section']??null)==='about'?'/about':'');
         }
-        if (! $county || preg_match('~^/(login|register|citizen|panel|county-admin|en|ar|forgot-password|password|counties|design|fonts|styles|build|storage|api|web-api|session)(/|\?|$)~', $path)) return $path;
+        if (! $county || preg_match('~^/(login|register|citizen|panel|county-admin|en|ar|forgot-password|password|counties|design|fonts|styles|build|storage|page-assets|api|web-api|session)(/|\?|$)~', $path)) return $path;
         if($this->county(explode('/',ltrim(parse_url($path,PHP_URL_PATH),'/'))[0]??null)) return $path;
         if (str_starts_with($path, '/'.$county['slug'].'/') || $path === '/'.$county['slug']) return $path;
         $path = preg_replace('~^/office(?=\?|$)~', '/', $path);
@@ -39,10 +46,10 @@ final class PortalView
 
     public function usefulLinks(array $items = []): array
     {
-        $links = array_values(array_filter($items, fn ($item) => in_array($item['position'] ?? 'useful', ['useful', 'quick'], true)));
+        $links = array_values(array_filter(RetiredSections::entries($items), fn ($item) => in_array($item['position'] ?? 'useful', ['useful', 'quick'], true)));
         if ($links) return $links;
         $source = $this->data('official-site');
-        return array_values(array_filter($source['pages'], fn ($item) => in_array($item['id'], $source['useful'], true)));
+        return array_values(array_filter(RetiredSections::entries($source['pages']), fn ($item) => in_array($item['id'], $source['useful'], true)));
     }
 
     public function image(mixed $record): ?string
@@ -107,7 +114,7 @@ final class PortalView
         return str_replace(['معاونین فرماندار مازندران','فرمانداران مازندران','مدیران روابط عمومی استان','دستگاه‌های استان','دستگاه های اجرایی استان','مازندران'],['معاونین فرماندار','بخشداران و دهیاران','مدیران روابط عمومی شهرستان','دستگاه‌های شهرستان','دستگاه‌های اجرایی شهرستان',$county['name']],$title);
     }
 
-    public function navigation(array $menus, ?array $county = null): array
+    public function navigation(array $menus, ?array $county = null, array $customPages = []): array
     {
         $menu = collect($menus)->firstWhere('key', 'official-main');
         $convert = function (array $items) use (&$convert, $county): array {
@@ -122,7 +129,23 @@ final class PortalView
             if($county)$items=array_values(array_filter($items,fn($item)=>!str_contains($item['href'],'/office?')));
             return array_map(fn ($item) => [...$item, 'title'=>$this->countyTitle($item['title'],$county), 'href' => $this->href($item['href'], $county), 'children' => $scope($item['children'] ?? [])], $items);
         };
-        return $scope($items);
+        $items = RetiredSections::entries($scope($items));
+        foreach ($items as &$item) {
+            $path = parse_url($item['href'], PHP_URL_PATH);
+            if ($county) $path = preg_replace('~^/'.preg_quote($county['slug'], '~').'(?=/|$)~', '', $path);
+            $placement = ['/services' => 'services', '/about' => 'about'][$path] ?? null;
+            if ($placement) $item['children'] = [...($item['children'] ?? []), ...$this->customLinks(['custom_pages' => $customPages], $placement, $county)];
+        }
+        unset($item);
+        return $items;
+    }
+
+    public function customLinks(array $home, string $placement, ?array $county = null): array
+    {
+        return array_values(array_map(fn ($page) => ['id' => 'custom-page-'.$page['id'], 'title' => $page['link_title'] ?: $page['title'],
+            'href' => $this->href($page['path'], $county), 'url' => $this->href($page['path'], $county), 'custom_page' => true,
+            'link_style' => $page['link_style'], 'image' => $page['link_style'] === 'image' ? ($page['link_image'] ?? null) : null,
+            'children' => []], array_filter($home['custom_pages'] ?? [], fn ($page) => in_array($placement, $page['placements'] ?? [], true))));
     }
 
     public function section(string $path): ?array
@@ -146,6 +169,7 @@ final class PortalView
 
     public function moduleAllowed(array $module, \App\Models\User $user): bool
     {
+        if (!empty($module['custom_page_builder'])) return CustomPages::mayManage($user);
         if (isset($module['service_agreement']) && !$user->hasGlobalAccess() && $user->organization?->type !== 'governorate') return false;
         if ($module['path'] === '/panel/admin/annual-slogan') return Workspace::mayManageAnnualSlogan($user);
         if (!$user->hasPermission($module['permission'])) return false;

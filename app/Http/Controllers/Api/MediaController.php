@@ -75,6 +75,7 @@ class MediaController
     {
         $m = Media::findOrFail($id);
         abort_unless(FileAccess::mayRead($m, $r->user()), 404);
+        if ($m->disk === 'page-assets') return response()->streamDownload(fn()=>print(\App\Services\PageImages::bytes($m)), $m->original_name, ['Content-Type'=>$m->mime,'X-Content-Type-Options'=>'nosniff']);
         abort_unless(Storage::disk($m->disk)->exists($m->path), 404);
 
         return Storage::disk($m->disk)->download($m->path, $m->original_name, ['X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
@@ -96,7 +97,8 @@ class MediaController
             ($m->url && (is_array($slogan) ? ($slogan['url'] ?? null) : $slogan) === $m->url);
         abort_if($used, 409, 'فایل هنوز در محتوا یا مکاتبات استفاده می‌شود.');
         // A tombstone prevents broken references; the file is physically removed only when unreferenced.
-        if ($m->disk !== 'portal-icons') Storage::disk($m->disk)->delete($m->path);
+        if ($m->disk === 'page-assets') DB::table('custom_page_images')->where('media_id',$m->id)->delete();
+        elseif ($m->disk !== 'portal-icons') Storage::disk($m->disk)->delete($m->path);
         $m->delete();
         Audit::record('media.deleted',$m);
 

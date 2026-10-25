@@ -759,7 +759,7 @@ export function adminController(context: PageContext) {
   function init() {
     const homePath = root.dataset.workspaceHome ?? '/panel/admin';
     const loginPath = root.dataset.workspaceLogin ?? '/panel/admin/login';
-    if (root.dataset.workspaceName && root.dataset.organizationType !== 'county') {
+    if (!root.querySelector('[data-custom-page-builder]') && root.dataset.workspaceName && root.dataset.organizationType !== 'county') {
       const main = one<HTMLElement>(root, '.main-content');
       if (main) {
         const notice = document.createElement('nav');

@@ -28,10 +28,10 @@ final class CountyPortal
     {
         $pages = ['/information'=>'دسترسی آزاد به اطلاعات','/performance'=>'عملکرد فرمانداری',
             '/participation'=>'مشارکت مردمی','/service-agreement'=>'توافق خدمات','/service-agreement/statement'=>'بیانیهٔ توافق خدمات',
-            '/accessibility'=>'دسترس‌پذیری','/privacy'=>'حریم خصوصی','/about/general'=>'اطلاعات عمومی',
+            '/accessibility'=>'دسترس‌پذیری','/privacy'=>'حریم خصوصی',
             '/districts'=>'بخش‌ها و روستاها','/units'=>'واحدهای فرمانداری','/governorate'=>'معرفی فرمانداری'];
         foreach (app(PortalView::class)->data('frontend')['officialSections'] as $section) {
-            if (in_array($section['kind']??'', ['page','article'], true) && str_starts_with($section['href'],'/section/')) $pages[$section['href']]=$section['title'];
+            if (!RetiredSections::entry($section) && in_array($section['kind']??'', ['page','article'], true) && str_starts_with($section['href'],'/section/')) $pages[$section['href']]=$section['title'];
         }
         return $pages;
     }

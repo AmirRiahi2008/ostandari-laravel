@@ -39,6 +39,7 @@ export function createImageAlbum(
 }
 
 type AlbumContext = {
+  uploadEndpoint?: string;
   wrapper: HTMLElement;
   surface: HTMLElement;
   tools: HTMLElement;
@@ -126,7 +127,7 @@ export function imageAlbumButton(context: AlbumContext): HTMLButtonElement {
             body.set('file', prepared);
             body.set('visibility', 'public');
             body.set('alt', image.name.replace(/\.[^.]+$/, '').slice(0, 255));
-            const result = await api<{ id: number; url: string }>('media', {
+            const result = await api<{ id: number; url: string }>(context.uploadEndpoint??'media', {
               method: 'POST',
               body,
               signal,

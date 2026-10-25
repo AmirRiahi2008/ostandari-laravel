@@ -3,6 +3,7 @@
 <section class="home-intro" aria-label="تازه‌های استانداری">
 <div class="container-body d-f6279acc73263f">@include('site.latest')<div class="container-body-right">@include('site.slider')</div>@include('site.governor')</div>
 </section>
+@include('site.custom-page-banners')
 <div class="sections-container">
 <section class="home-counties" aria-label="فرمانداری‌های مازندران" data-home-reveal="true">@include('site.county-map')</section>
 <section class="home-information" aria-label="اخبار و پیوندهای مفید" data-home-reveal="true">

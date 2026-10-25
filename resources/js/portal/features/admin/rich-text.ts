@@ -113,6 +113,10 @@ function button(label: string, action: () => void): HTMLButtonElement {
 
 export function mountRichText(root: HTMLElement, signal: AbortSignal, preview: boolean): void {
   for (const source of all<HTMLTextAreaElement>(root, 'textarea[data-rich-text]')) {
+    if(source.closest('.portal-cms'))continue;
+    const customPage=!!source.closest('[data-custom-page-builder]');
+    const uploadEndpoint=customPage?'admin/custom-pages/image':'media';
+    const imageEndpoint=customPage?'admin/custom-pages/images':'media';
     const initialRequired = source.required;
     const initialHidden = source.hidden;
     const wrapper = document.createElement('div');
@@ -298,7 +302,7 @@ export function mountRichText(root: HTMLElement, signal: AbortSignal, preview: b
     };
     if (source.dataset.field === 'body')
       toolbar.append(
-        imageAlbumButton({
+        imageAlbumButton({uploadEndpoint,
           wrapper,
           surface,
           tools,
@@ -372,7 +376,7 @@ export function mountRichText(root: HTMLElement, signal: AbortSignal, preview: b
             body.set('file', await prepareUpload(chosen));
             body.set('visibility', 'public');
             body.set('alt', alt.element.value.trim());
-            const result = await api<{ id: number; url: string }>('media', {
+            const result = await api<{ id: number; url: string }>(uploadEndpoint, {
               method: 'POST',
               body,
               signal,
@@ -392,7 +396,7 @@ export function mountRichText(root: HTMLElement, signal: AbortSignal, preview: b
         });
         openTools([file.field, existing, alt.field, send]);
         if (!preview)
-          void api<typeof images>('media?visibility=public&per_page=100', { signal })
+          void api<typeof images>(imageEndpoint+'?visibility=public&per_page=100', { signal })
             .then((result) => {
               if (signal.aborted) return;
               images = result.data.filter((image) => image.url && image.mime?.startsWith('image/'));

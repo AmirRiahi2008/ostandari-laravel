@@ -59,7 +59,7 @@
                         @if(!empty($item['children']))
                             <div class="source-direct-panel" x-show="open" x-cloak>
                                 <aside class="source-mega-feature"><span class="source-mega-feature-icon">@include('icons.'.$icon)</span><h2>{{ $item['title'] }}</h2><a href="{{ $item['href'] }}">مشاهدهٔ همه @include('icons.arrow')</a></aside>
-                                <div class="source-direct-grid">@foreach($item['children'] as $child)<div><a class="source-direct-title" href="{{ $child['href'] }}"><span>{{ $child['title'] }}</span>@include('icons.arrow')</a>@foreach($child['children'] ?? [] as $link)<a class="source-direct-child" href="{{ $link['href'] }}">{{ $link['title'] }}</a>@endforeach</div>@endforeach</div>
+                                <div class="source-direct-grid">@foreach($item['children'] as $child)<div><a @class(['source-direct-title','has-custom-page-image'=>($child['link_style']??'')==='image']) href="{{ $child['href'] }}">@include('partials.custom-link-image',['link'=>$child])<span>{{ $child['title'] }}</span>@include('icons.arrow')</a>@foreach($child['children'] ?? [] as $link)<a class="source-direct-child" href="{{ $link['href'] }}">{{ $link['title'] }}</a>@endforeach</div>@endforeach</div>
                             </div>
                         @endif
                     </div>@endif

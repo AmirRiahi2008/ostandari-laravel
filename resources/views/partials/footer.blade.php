@@ -88,6 +88,7 @@
 <span>{{ $label }}: </span>
 <bdi>{{ $contact[$key] }}</bdi>
 </p>@endif @endforeach</address>
+@if($customFooterLinks=$ui->customLinks($home,'footer',$county))<nav class="portal-custom-footer-links" aria-label="پیوندهای صفحات">@foreach($customFooterLinks as $link)<a href="{{ $link['href'] }}">@include('partials.custom-link-image')<span>{{ $link['title'] }}</span></a>@endforeach</nav>@endif
 </div>
 </footer>
 </div>

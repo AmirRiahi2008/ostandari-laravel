@@ -85,6 +85,16 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
             Route::post('notifications/{id}/read', [SystemController::class, 'markRead'])->where('id', '[0-9a-fA-F-]{36}');
         });
         Route::prefix('admin')->middleware(['staff', 'portal'])->group(function () {
+            Route::prefix('custom-pages')->name('admin.custom-pages.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Api\CustomPageController::class, 'index'])->name('index');
+                Route::post('/', [\App\Http\Controllers\Api\CustomPageController::class, 'store'])->name('store');
+                Route::get('images', [\App\Http\Controllers\Api\CustomPageController::class, 'images'])->name('images');
+                Route::post('image', [\App\Http\Controllers\Api\CustomPageController::class, 'image'])->name('image');
+                Route::get('{id}', [\App\Http\Controllers\Api\CustomPageController::class, 'show'])->whereNumber('id')->name('show');
+                Route::patch('{id}', [\App\Http\Controllers\Api\CustomPageController::class, 'update'])->whereNumber('id')->name('update');
+                Route::delete('{id}', [\App\Http\Controllers\Api\CustomPageController::class, 'destroy'])->whereNumber('id')->name('destroy');
+                Route::post('{id}/restore', [\App\Http\Controllers\Api\CustomPageController::class, 'restore'])->whereNumber('id')->name('restore');
+            });
             Route::get('county-portal', [\App\Http\Controllers\Api\CountyPortalController::class, 'show']);
             Route::put('county-portal', [\App\Http\Controllers\Api\CountyPortalController::class, 'update']);
             Route::post('county-portal/menus', [\App\Http\Controllers\Api\CountyPortalController::class, 'menu']);

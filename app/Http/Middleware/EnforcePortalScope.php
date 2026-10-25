@@ -14,7 +14,8 @@ final class EnforcePortalScope
         if ($user?->isStaff()) {
             Workspace::assertUser($user);
             abort_if(! $request->isMethodSafe() && $user->hasReadOnlyWorkspace() &&
-                ! ($request->routeIs('admin.annual-slogan.update', 'web.admin.annual-slogan.update') && Workspace::mayManageAnnualSlogan($user)), 403, 'پنل روابط عمومی استانداری فقط‌خواندنی است.');
+                ! ($request->routeIs('admin.annual-slogan.update', 'web.admin.annual-slogan.update') && Workspace::mayManageAnnualSlogan($user)) &&
+                ! ($request->routeIs('admin.custom-pages.*', 'web.admin.custom-pages.*') && \App\Services\CustomPages::mayManage($user)), 403, 'پنل روابط عمومی استانداری فقط‌خواندنی است.');
         }
         return $next($request);
     }

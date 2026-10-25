@@ -22,6 +22,7 @@ class InlineMedia
     public static function syncHtml(Model $model, User $actor, string $html, int $limit = 20): void
     {
         $paths = [];
+        $pageImages = [];
         $base = rtrim(Storage::disk('public')->url(''), '/');
         $prefix = rtrim(parse_url($base, PHP_URL_PATH) ?: '/storage', '/').'/';
         $document = new \DOMDocument;
@@ -30,6 +31,9 @@ class InlineMedia
             $document->loadHTML('<?xml encoding="UTF-8"><html><body>'.$html.'</body></html>', LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
             foreach ($document->getElementsByTagName('img') as $image) {
                 $url = $image->getAttribute('src');
+                $host = parse_url($url, PHP_URL_HOST);
+                if ((!$host || in_array($host,[parse_url(config('app.url'),PHP_URL_HOST),request()->getHost()],true)) &&
+                    preg_match('~^/page-assets/([0-9]+)/([a-zA-Z0-9-]+\.(?:jpg|jpeg|png|webp))$~', parse_url($url,PHP_URL_PATH)??'', $asset)) $pageImages[(int)$asset[1]] = $asset[2];
                 if (str_starts_with($url, $base.'/') || str_starts_with($url, $prefix)) {
                     $path = parse_url($url, PHP_URL_PATH) ?: '';
                     if (str_starts_with($path, $prefix)) {
@@ -42,12 +46,18 @@ class InlineMedia
             libxml_use_internal_errors($previous);
         }
         $paths = array_values(array_unique($paths));
-        if (count($paths) > $limit) {
+        if (count($paths) + count($pageImages) > $limit) {
             throw ValidationException::withMessages(['body' => 'تعداد تصاویر متن بیش از حد مجاز است.']);
         }
         $files = Media::whereIn('path', $paths)->where('disk', 'public')->where('visibility', 'public')->lockForUpdate()->get();
         if ($files->count() !== count($paths)) {
             throw ValidationException::withMessages(['body' => 'یکی از تصاویر متن حذف شده یا عمومی نیست.']);
+        }
+        if ($pageImages) {
+            $assets = Media::whereIn('id',array_keys($pageImages))->where('disk','page-assets')->where('visibility','public')->lockForUpdate()->get();
+            if ($assets->count()!==count($pageImages) || $assets->contains(fn($file)=>$file->path!==$pageImages[$file->id]))
+                throw ValidationException::withMessages(['body'=>'یکی از تصاویر متن حذف شده یا معتبر نیست.']);
+            $files=$files->concat($assets);
         }
         foreach ($files as $file) {
             abort_unless(str_starts_with($file->mime, 'image/'), 422, 'فایل درج‌شده در متن باید تصویر باشد.');

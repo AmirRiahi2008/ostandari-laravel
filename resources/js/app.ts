@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+import {customPages} from './portal/features/admin/custom-pages';
 import {api,jsonBody,upload} from './portal/lib/api/client';
 import {dynamicAnswers} from './forms';
 import {prepareUpload} from './portal/features/admin/uploads';
@@ -17,6 +18,8 @@ const citizenDestination=()=>{
   if(url.origin!==location.origin||/^\/(?:panel|admin|session|web-api|api|login|register)(?:\/|$)/.test(url.pathname))return '/citizen';
   return url.pathname+url.search+url.hash;
 };
+
+Alpine.data('customPages',customPages);
 
 Alpine.data('portalPage',()=>({
   busy:false,mobileOpen:false,abort:new AbortController(),motion:undefined as undefined|(()=>void),

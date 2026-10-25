@@ -16,6 +16,7 @@ class Media extends PortalModel
     {
         if ($this->visibility !== 'public') return null;
         if ($this->disk === 'portal-icons') return '/design/icons/'.basename($this->path);
+        if ($this->disk === 'page-assets') return '/page-assets/'.$this->id.'/'.basename($this->path);
         return Storage::disk('public')->url($this->path);
     }
 

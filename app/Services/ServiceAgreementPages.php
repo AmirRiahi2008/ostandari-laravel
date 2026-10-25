@@ -40,8 +40,12 @@ final class ServiceAgreementPages
     public static function query(string $key, int $organizationId): Builder
     {
         if (!isset(self::PAGES[$key])) throw new \InvalidArgumentException('Unknown service-agreement page.');
+        $imported=Setting::where('key', self::IMPORT_KEY)->exists();
         return Content::where('type', 'page')->where('locale', 'fa')->where('organization_id', $organizationId)
-            ->where('metadata->service_agreement', $key);
+            ->where(function($query)use($key,$imported){
+                $query->where('metadata->service_agreement', $key);
+                if(!$imported)$query->orWhere(fn($q)=>$q->where('slug',self::PAGES[$key]['slug'])->whereNull('metadata->service_agreement'));
+            });
     }
 
     /** Replace only the two requested pages once; later CMS edits survive every deployment. */

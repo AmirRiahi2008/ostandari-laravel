@@ -38,10 +38,11 @@ final class AdminController
         if(preg_match('~^(/panel/admin/reports)/([^/]+)/edit$~',$modulePath,$report)){ $modulePath=$report[1];$reference=$report[2]; }
         elseif(preg_match('~^(.+)/(new)$~',$modulePath,$editor)){ $modulePath=$editor[1];$mode='create'; }
         elseif(preg_match('~^(.+)/([^/]+)/edit$~',$modulePath,$editor)){ $modulePath=$editor[1];$id=$editor[2];$mode='edit'; }
-        $available=[...$meta['modules'], ...ServiceAgreementPages::modules()];
+        $available=[...$meta['modules'], ...ServiceAgreementPages::modules(), \App\Services\CustomPages::module()];
         if($context['type']==='county')$available[]=['path'=>'/panel/admin/portal','title'=>'ظاهر و اطلاعات پرتال','description'=>'معرفی شهرستان، تصاویر، اطلاعات تماس، منوها و نمایش بخش‌ها','section'=>'appearance','resource'=>'','permission'=>'organizations.manage','showInNavigation'=>true,'canCreate'=>false,'canEdit'=>true];
         $module=collect($available)->firstWhere('path',$modulePath);
         if($module) abort_unless($ui->moduleAllowed($module,$user),403);
+        if ($modulePath === '/panel/admin/custom-pages') $context['can_write'] = true;
         if (isset($module['service_agreement'])) {
             $rootId = \App\Models\Organization::active()->where('type','governorate')->orderBy('id')->value('id');
             abort_unless($rootId, 503, 'اطلاعات استانداری آماده نیست.');
@@ -68,6 +69,7 @@ final class AdminController
         $content=$mode?'editor':($reference?'reports':($modulePath==='/panel/admin'?'dashboard':(!empty($module['page'])?'list':'utility')));
         if($modulePath==='/panel/admin/reports')$content='reports';
         if($modulePath==='/panel/admin/portal')$content='county-portal';
+        if($modulePath==='/panel/admin/custom-pages')$content='custom-pages';
         $stats=null;
         if($content==='dashboard'){abort_unless($user->hasPermission('dashboard.view'),403);$stats=app(SystemController::class)->dashboard($request)->getData(true)['data'];}
         $moduleUrl=$ui->adminHref($modulePath,$context);

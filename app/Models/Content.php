@@ -40,6 +40,7 @@ class Content extends PortalModel
 
     public function scopeVisible($q)
     {
-        return $q->published()->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+        return $q->published()->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->where(fn($q)=>$q->where('type','!=','page')->orWhere('slug','!=','official-page-menu-5'));
     }
 }

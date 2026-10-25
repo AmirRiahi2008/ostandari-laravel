@@ -3,7 +3,8 @@
 @elseif($resource==='faqs')
 @forelse($items as $item)<details class="portal-card"><summary>{{ $item['question'] }}</summary><div class="portal-article-body">{!! \App\Services\Html::clean($item['answer'] ?? '') !!}</div></details>@empty<p class="portal-empty">پرسشی ثبت نشده است.</p>@endforelse
 @elseif($resource==='links')
-<div class="portal-links-directory">@forelse($items as $link)<a class="portal-useful-link" href="{{ $ui->href($link['url'] ?? $link['href'] ?? '/links',$county) }}">@include('partials.link-symbol')<h2>{{ $link['title'] }}</h2><span aria-hidden="true">↖</span></a>@empty<p class="portal-feed-empty">پیوندی ثبت نشده است.</p>@endforelse</div>
+<div class="portal-links-directory">@forelse($items as $link)<a @class(['portal-useful-link','has-custom-image'=>($link['link_style']??'')==='image']) href="{{ $ui->href($link['url'] ?? $link['href'] ?? '/links',$county) }}">@if(($link['link_style']??'')==='image')@include('partials.custom-link-image')@else
+@include('partials.link-symbol')@endif<h2>{{ $link['title'] }}</h2><span aria-hidden="true">↖</span></a>@empty<p class="portal-feed-empty">پیوندی ثبت نشده است.</p>@endforelse</div>
 @elseif($resource==='polls')
 @forelse($items as $item)<section class="portal-card"><h2>{{ $item['question'] }}</h2><p>{{ $item['description'] ?? '' }}</p>@auth<form x-data="apiForm(@js('polls/'.$item['id'].'/vote'))" @submit.prevent="submit($event)">@foreach($item['options'] ?? [] as $option)<label class="block my-3"><input type="radio" name="option_id" value="{{ $option['id'] }}" required> {{ $option['title'] }}</label>@endforeach<button class="portal-button" :disabled="busy">ثبت رأی</button><p role="alert" x-text="error"></p><p role="status" x-text="message"></p></form>@else<a href="/login">برای شرکت در نظرسنجی وارد شوید.</a>@endauth</section>@empty<p class="portal-empty">نظرسنجی فعالی وجود ندارد.</p>@endforelse
 @elseif($resource==='forms')

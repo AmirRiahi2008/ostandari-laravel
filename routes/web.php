@@ -21,4 +21,6 @@ Route::get('/county-admin/{slug}/{path?}', [AdminController::class, 'county'])->
     ->where(['slug' => '[a-z0-9-]+', 'path' => '.*'])->name('county.admin');
 Route::get('/panel/admin/{path?}', [AdminController::class, 'show'])->middleware(WebStaff::class)->where('path', '.*');
 Route::get('/citizen', [AuthPageController::class, 'citizen']);
+Route::get('/page-assets/{id}/{name}', \App\Http\Controllers\Web\PageImageController::class)->whereNumber('id')->where('name','[a-zA-Z0-9-]+\.(?:jpg|jpeg|png|webp)')
+    ->withoutMiddleware([\Illuminate\Cookie\Middleware\EncryptCookies::class,\Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,\Illuminate\Session\Middleware\StartSession::class,\Illuminate\View\Middleware\ShareErrorsFromSession::class,\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);
 Route::get('/{path?}', PublicSiteController::class)->where('path', '.*');
