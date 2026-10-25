@@ -770,9 +770,9 @@ export function adminController(context: PageContext) {
         home.textContent = root.dataset.workspaceName;
         const scope = document.createElement('span');
         scope.textContent = readOnly
-          ? 'فقط مشاهدهٔ اطلاعات همین سازمان'
+          ? 'مشاهدهٔ اطلاعات استان'
           : root.dataset.workspaceGlobal === 'false'
-            ? 'مدیریت محتوای همین سازمان'
+            ? 'مدیریت محتوای استان'
             : 'مدیریت مرکزی سامانه';
         notice.append(home, scope);
         main.prepend(notice);

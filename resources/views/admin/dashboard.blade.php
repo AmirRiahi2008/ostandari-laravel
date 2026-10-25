@@ -2,7 +2,7 @@
 @if($context['type']==='county')
 <nav class="portal-county-dashboard-actions" aria-label="مدیریت پرتال"><a class="portal-button" href="{{ $context['dashboard_path'] }}/news/new">＋ افزودن خبر</a><a href="{{ $context['dashboard_path'] }}/portal">ظاهر و اطلاعات پرتال</a><a href="{{ $context['public_path'] }}" target="_blank" rel="noopener">مشاهدهٔ سایت فرمانداری ↗</a></nav>
 @else
-<p class="portal-admin-help">{{ $context['can_write']?'مدیریت محتوای سازمان و پیگیری خدمات مردمی':'این فضای کاری فقط برای مشاهدهٔ اطلاعات است.' }}</p>
+<p class="portal-admin-help">{{ $context['can_write']?'مدیریت محتوای استان و پیگیری خدمات مردمی':'این فضای کاری فقط برای مشاهدهٔ اطلاعات است.' }}</p>
 @endif
 <div class="county-stats-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">@foreach(['محتوا'=>array_sum($stats['contents_by_type']??[]),'منتشرشده'=>$stats['contents_by_status']['published']??0,'گزارش‌های مردمی'=>array_sum($stats['tickets_by_status']??[]),'نیازمند پیگیری'=>$stats['overdue_tickets']??0] as $label=>$value)<article class="county-stat-card rounded-xl border border-slate-200 p-5"><span>{{ $label }}</span><strong class="block text-3xl">{{ $value }}</strong></article>@endforeach</div>
 <h2 class="my-6 text-xl font-bold">دسترسی به بخش‌ها</h2><div class="county-module-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">@foreach($modules as $entry)@if($entry['showInNavigation'])<a class="county-module-card rounded-xl border border-slate-200 p-4" href="{{ $entry['path'] }}"><strong>{{ $entry['title'] }}</strong>@if($context['type']!=='county')<p>{{ $entry['description'] }}</p>@endif</a>@endif @endforeach</div>

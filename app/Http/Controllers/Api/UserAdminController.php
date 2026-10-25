@@ -58,8 +58,8 @@ class UserAdminController
         $role = Role::findOrFail($data['role_id'] ?? $target?->role_id);
         if (in_array($role->name, ['county_public_relations', 'province_public_relations'], true)) {
             $organization = \App\Models\Organization::find($data['organization_id'] ?? $target?->organization_id);
-            abort_unless($organization?->is_active && $organization->type === ($role->name === 'county_public_relations' ? 'county' : 'governorate'), 422, 'نقش روابط عمومی و نوع سازمان انتخاب‌شده باید یکسان باشند.');
-            abort_if(($data['access_scope'] ?? $target?->access_scope ?? 'organization') !== 'organization', 422, 'روابط عمومی باید دسترسی محدود به سازمان داشته باشد.');
+            abort_unless($organization?->is_active && $organization->type === ($role->name === 'county_public_relations' ? 'county' : 'governorate'), 422, 'نقش روابط عمومی باید با استان یا فرمانداری انتخاب‌شده مطابقت داشته باشد.');
+            abort_if(($data['access_scope'] ?? $target?->access_scope ?? 'organization') !== 'organization', 422, 'دسترسی روابط عمومی باید به استان یا فرمانداری مربوط محدود باشد.');
         }
         if (! $actor->isSuperAdmin()) {
             abort_if($target?->isSuperAdmin() || $role->name === 'super_admin', 403, 'مدیریت مدیر اصلی مجاز نیست.');

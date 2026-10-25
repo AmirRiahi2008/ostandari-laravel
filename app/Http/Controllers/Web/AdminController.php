@@ -85,7 +85,7 @@ final class AdminController
 
     private function countyModule(array $module, PortalView $ui, array $county): array
     {
-        $label=fn($text)=>str_replace(['سمت سازمانی','واحد سازمانی','سازمان‌ها','سازمان'],['سمت','واحد','فرمانداری‌ها','فرمانداری'],$ui->countyTitle($text,$county));
+        $label=fn($text)=>str_replace(['نام استان یا فرمانداری','استان یا فرمانداری','استان و فرمانداری‌ها'],['نام فرمانداری','فرمانداری','فرمانداری‌ها'],$ui->countyTitle($text,$county));
         $path=$module['canonical_path']??$module['path'];
         $module['title']=match($path){
             '/panel/admin/county-governors'=>'فرماندار',

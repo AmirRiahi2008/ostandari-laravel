@@ -90,7 +90,7 @@ class ResourcePayload
             if (isset($data['parent_id']) && (! $model || (int) $data['parent_id'] !== (int) $model->parent_id)) {
                 Access::organization($actor, $data['parent_id']);
             }
-            abort_if($creating && ! $actor->hasGlobalAccess() && empty($data['parent_id']), 403, 'سازمان باید زیرمجموعه سازمان شما باشد.');
+            abort_if($creating && ! $actor->hasGlobalAccess() && empty($data['parent_id']), 403, 'واحد جدید باید زیرمجموعهٔ استان یا فرمانداری شما باشد.');
         }
         if ($resource === 'gallery-items') {
             Access::gallery($actor, (int) ($data['gallery_id'] ?? $model?->gallery_id));

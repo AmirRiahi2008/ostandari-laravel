@@ -36,7 +36,7 @@ class ResourceController
         $user = $request->user();
         abort_unless($user->isStaff() && $user->hasPermission($def['permission']), 403);
         if (! $request->isMethodSafe() && ! $user->hasGlobalAccess()) {
-            abort_if($resource === 'counties' || $resource === 'organizations' && ! in_array($request->method(), ['PUT', 'PATCH'], true), 403, 'ساختار استان و سازمان‌ها فقط در مدیریت مرکزی تغییر می‌کند.');
+            abort_if($resource === 'counties' || $resource === 'organizations' && ! in_array($request->method(), ['PUT', 'PATCH'], true), 403, 'ساختار استان و فرمانداری‌ها فقط در مدیریت مرکزی تغییر می‌کند.');
         }
         $q = $def['model']::query()->with($def['with'] ?? []);
         foreach ($def['scope'] ?? [] as $k => $v) {

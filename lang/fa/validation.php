@@ -12,5 +12,5 @@ return [
     'min' => ['string' => ':attribute باید حداقل :min نویسه باشد.', 'numeric' => ':attribute باید حداقل :min باشد.', 'array' => ':attribute باید حداقل :min مورد داشته باشد.'],
     'between' => ['numeric' => ':attribute باید بین :min و :max باشد.'], 'after_or_equal' => ':attribute باید بعد از یا برابر :date باشد.',
     'password' => ['letters' => 'رمز باید حرف داشته باشد.', 'mixed' => 'رمز باید حرف بزرگ و کوچک داشته باشد.', 'numbers' => 'رمز باید عدد داشته باشد.'],
-    'attributes' => ['name' => 'نام', 'email' => 'ایمیل', 'mobile' => 'شماره همراه', 'national_code' => 'کد ملی', 'password' => 'رمز عبور', 'title' => 'عنوان', 'body' => 'متن', 'slug' => 'نشانی یکتا', 'code' => 'کد تأیید', 'fields' => 'فیلدهای فرم', 'status' => 'وضعیت', 'file' => 'فایل', 'organization_id' => 'سازمان', 'category_id' => 'گروه', 'per_page' => 'تعداد موارد در صفحه'],
+    'attributes' => ['name' => 'نام', 'email' => 'ایمیل', 'mobile' => 'شماره همراه', 'national_code' => 'کد ملی', 'password' => 'رمز عبور', 'title' => 'عنوان', 'body' => 'متن', 'slug' => 'نشانی یکتا', 'code' => 'کد تأیید', 'fields' => 'فیلدهای فرم', 'status' => 'وضعیت', 'file' => 'فایل', 'organization_id' => 'استان یا فرمانداری', 'category_id' => 'گروه', 'per_page' => 'تعداد موارد در صفحه'],
 ];

@@ -13,7 +13,7 @@ final class Workspace
     {
         if ($user->hasGlobalAccess()) return;
         $organization = $user->organization;
-        abort_unless($organization && $organization->is_active, 403, 'حساب مدیریت باید به یک سازمان فعال متصل باشد.');
+        abort_unless($organization && $organization->is_active, 403, 'حساب مدیریت باید به استان یا فرمانداری فعال متصل باشد.');
         if ($organization->type === 'county') {
             abort_unless($organization->county?->is_active, 403, 'فرمانداری به شهرستان فعال متصل نیست.');
         }

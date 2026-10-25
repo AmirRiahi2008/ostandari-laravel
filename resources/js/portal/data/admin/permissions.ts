@@ -4,7 +4,7 @@ export const adminPermissions: Record<string, string> = {
   'categories.manage': 'مدیریت گروه‌ها',
   'navigation.manage': 'مدیریت منوها',
   'media.manage': 'مدیریت تصاویر و فایل‌ها',
-  'organizations.manage': 'مدیریت سازمان‌ها و شهرستان‌ها',
+  'organizations.manage': 'مدیریت استان و فرمانداری‌ها',
   'members.manage': 'مدیریت مسئولان و اعضا',
   'services.manage': 'مدیریت خدمات',
   'settings.manage': 'تنظیمات سایت',

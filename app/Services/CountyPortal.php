@@ -79,7 +79,7 @@ final class CountyPortal
         Workspace::assertCounty($user);
         abort_unless($user->hasPermission('organizations.manage'), 403);
         abort_if(array_intersect_key($input, array_flip(['organization_id','county_id','key','slug','type','is_active','role_id','access_scope'])), 403,
-            'شناسه و سازمان پرتال از حساب شما تعیین می‌شود و قابل تغییر نیست.');
+            'شناسهٔ پرتال و فرمانداری مربوط از حساب شما تعیین می‌شود و قابل تغییر نیست.');
         $rules = ['title'=>['sometimes','required','string','max:255'], 'slogan_text'=>['nullable','string','max:500'],
             'about_body'=>['nullable','string','max:1000000'], 'county_description'=>['nullable','string','max:16000'],
             'video_url'=>['nullable','url:http,https','max:2048'], 'email'=>['nullable','email','max:255'],

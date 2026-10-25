@@ -6,8 +6,8 @@ export const adminSections = [
   },
   {
     id: 'people',
-    title: 'استانداری و سازمان‌ها',
-    description: 'استاندار، فرمانداران، اعضا و اطلاعات سازمان‌ها',
+    title: 'مدیران و اطلاعات استان',
+    description: 'استاندار، فرمانداران، مدیران و اطلاعات استان',
   },
   {
     id: 'appearance',

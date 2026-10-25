@@ -35,7 +35,7 @@ class Access
     public static function organization(User $user, mixed $id): void
     {
         if (! $user->hasGlobalAccess()) {
-            abort_unless(in_array((int) $id, self::organizations($user), true), 403, 'سازمان خارج از محدوده دسترسی است.');
+            abort_unless(in_array((int) $id, self::organizations($user), true), 403, 'استان یا فرمانداری انتخاب‌شده خارج از محدودهٔ دسترسی شماست.');
         }
     }
 
