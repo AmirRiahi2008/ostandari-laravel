@@ -115,6 +115,8 @@ final class MemberDirectoryTest extends TestCase
             Http::fake([MemberDirectory::PHOTO_URL=>Http::sequence()->push('',504)->push('<html>not a photo</html>',200)->push($jpeg,200,['Content-Type'=>'image/jpeg'])]);
             $this->artisan('portal:import-member-directory')->assertSuccessful();
             $this->assertDatabaseCount('members',198);$this->assertSame(MemberDirectory::PHOTO_URL,MemberDirectory::portraitUrl());
+            $this->artisan('portal:import-member-directory')->assertSuccessful();
+            Http::assertSentCount(1);
             $this->assertFalse(app(MemberDirectory::class)->downloadPortrait());
             $this->assertTrue(app(MemberDirectory::class)->downloadPortrait());
             $this->assertSame($jpeg,file_get_contents($temporary.'/'.MemberDirectory::PHOTO_PATH));
