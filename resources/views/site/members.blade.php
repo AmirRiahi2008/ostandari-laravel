@@ -1,15 +1,32 @@
-<div class="manager-grid">
+@php
+    $memberProfile=($view??null)==='members' && request()->filled('person');
+@endphp
+<div class="manager-grid portal-member-grid {{ $memberProfile?'is-profile':'' }}">
 @foreach($items as $person)
-<article class="card1">
-    <div class="card1-bala"><div class="cart1-img" x-data="{failed:false}">
-        @if($image=$ui->image($person))
-            <img src="{{ $image }}" alt="{{ empty($person['media_id']) && !empty($person['image_url']) ? 'تصویر موقت' : $person['name'] }}" loading="lazy" x-show="!failed" x-init="failed=$el.complete && $el.naturalWidth===0" x-on:error="failed=true"><div class="cart1-avatar" x-show="failed" x-cloak>@include('icons.people')</div>
-        @else<div class="cart1-avatar">@include('icons.people')</div>@endif
-    </div><div class="cart1-onvan"><h3>{{ $person['name'] }}</h3><div class="badge">{{ $person['position'] ?? '' }}</div></div></div>
-    <div class="cart1-p-class"><p>{{ $person['organization']['name'] ?? $person['position'] ?? '' }}</p></div>
-    <div class="buttons"><a class="btn-outline" href="{{ $ui->href('/managers?person='.$person['id'],$county) }}">پروفایل</a><a class="btn-solid" href="{{ !empty($person['email']) ? 'mailto:'.$person['email'] : $ui->href('/contact',$county) }}">ارتباط</a></div>
-    @if(!empty($person['bio']))<p>{{ $ui->text($person['bio']) }}</p>@endif
-    @if(!empty($person['body']))<div class="portal-article-body">{!! \App\Services\Html::clean($person['body']) !!}</div>@endif
+@php
+    $memberOrganization=$person['organization']['name']??(($person['organization_id']??null)===($home['organization']['id']??0)?($home['organization']['name']??''):'');
+@endphp
+<article class="portal-member-card {{ $memberProfile?'is-profile':'' }}">
+    <header class="portal-member-heading">
+        <div class="portal-member-portrait" x-data="{failed:false}">
+            @if($image=$ui->image($person))
+                <img src="{{ $image }}" alt="{{ empty($person['media_id']) && !empty($person['image_url']) ? 'تصویر موقت' : $person['name'] }}" width="88" height="88" loading="lazy" x-show="!failed" x-init="failed=$el.complete && $el.naturalWidth===0" x-on:error="failed=true">
+                <span class="portal-member-avatar" x-show="failed" x-cloak aria-hidden="true">@include('icons.people')</span>
+            @else
+                <span class="portal-member-avatar" aria-hidden="true">@include('icons.people')</span>
+            @endif
+        </div>
+        <div class="portal-member-identity"><h3>{{ $person['name'] }}</h3><p class="portal-member-position">{{ $person['position'] ?? '' }}</p></div>
+    </header>
+    @if($memberOrganization && $memberOrganization!==($person['position']??''))<p class="portal-member-organization">{{ $memberOrganization }}</p>@endif
+    @if($memberProfile)
+        @if(!empty($person['bio']))<p class="portal-member-bio">{{ $ui->text($person['bio']) }}</p>@endif
+        @if(!empty($person['body']))<div class="portal-article-body">{!! \App\Services\Html::clean($person['body']) !!}</div>@endif
+    @endif
+    <div class="portal-member-actions">
+        <a class="portal-member-profile" href="{{ $ui->href('/managers?person='.$person['id'],$county) }}" aria-label="مشاهدهٔ پروفایل {{ $person['name'] }}">مشاهده پروفایل <span aria-hidden="true">←</span></a>
+        <a class="portal-member-contact" href="{{ !empty($person['email']) ? 'mailto:'.$person['email'] : $ui->href('/contact',$county) }}" aria-label="ارتباط با {{ $person['name'] }}">ارتباط</a>
+    </div>
 </article>
 @endforeach
 </div>
