@@ -13,7 +13,7 @@
 [data-section='site'] [data-alpine-header][data-portal-ui] .menu-item>.rast{display:flex;height:100%;align-items:center;justify-content:center;white-space:nowrap;gap:5px;margin:0;padding:0}
 [data-section='site'] [data-alpine-header][data-portal-ui] .source-direct-toggle{flex:0 0 16px;width:16px;margin:0;padding:0}
 /* The menu uses a white category rail, a quiet directory and a separate footer. */
-[data-section='site'] [data-alpine-header][data-portal-ui] .source-mega>.mega-menu{display:grid;grid-template-columns:250px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;height:460px;min-height:300px;max-height:70dvh;inset:100% 0 auto;border:1px solid #dae5ed;border-radius:0 0 16px 16px;box-shadow:0 24px 46px -20px #123b6250;overflow:hidden}
+[data-section='site'] [data-alpine-header][data-portal-ui] .source-mega>.mega-menu{display:grid;grid-template-columns:250px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;height:auto;min-height:300px;max-height:70dvh;inset:100% 0 auto;border:1px solid #dae5ed;border-radius:0 0 16px 16px;box-shadow:0 24px 46px -20px #123b6250;overflow:hidden}
 [data-section='site'] [data-alpine-header][data-portal-ui] .source-mega .categories{background:#fff;padding:24px 18px;grid-row:1;border-inline-end:1px solid #dfe7ef;scrollbar-width:thin;scrollbar-color:#c7d5df transparent}
 [data-section='site'] [data-alpine-header][data-portal-ui] .source-mega .categories>li{border-radius:8px;margin:0 0 8px;box-shadow:none;background:transparent;color:#496577}
 [data-section='site'] [data-alpine-header][data-portal-ui] .source-mega .categories>li.active{background:#edf7f8;color:#087d83;box-shadow:inset -2px 0 #119e99}
