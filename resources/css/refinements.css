@@ -100,6 +100,23 @@
 .portal-article-page .portal-article-cover>img{width:100%;height:auto;max-height:620px;object-fit:contain;display:block}
 .portal-article-page .portal-article-body{padding-top:12px;width:100%;max-width:none;font-size:16px;line-height:2.25;color:#2c4a60;overflow-wrap:anywhere}
 .portal-article-page .portal-article-body img{max-width:100%;height:auto;object-fit:contain}
+/* Service agreements use their CMS text with readable headings and service facts. */
+.portal-service-agreement .portal-article-heading{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #dfe9ef}
+.portal-service-agreement .portal-article-body{padding-top:0;font-size:15px;line-height:2.3}
+.portal-service-agreement .portal-article-body h2{margin:30px 0 12px;padding-inline-start:12px;border-inline-start:3px solid #119e99;color:#184b68;font-size:18px;font-weight:700;line-height:1.9}
+.portal-service-agreement .portal-article-body h2:first-child{margin-top:0}
+.portal-service-agreement .portal-article-body p{margin:0 0 16px;text-align:start}
+.portal-service-agreement .portal-article-body table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;margin:16px 0 30px;border:1px solid #dfe9ef;border-radius:14px;overflow:hidden}
+.portal-service-agreement .portal-article-body :is(th,td){padding:14px 18px;border:0;border-bottom:1px solid #e5edf2;text-align:start;vertical-align:top;line-height:2.1;font-size:14px;overflow-wrap:anywhere}
+.portal-service-agreement .portal-article-body th{width:28%;background:#f1f7f9;color:#28566c;font-weight:650}
+.portal-service-agreement .portal-article-body td{background:#fff;font-weight:400}
+.portal-service-agreement .portal-article-body tr:last-child>:is(th,td){border-bottom:0}
+.portal-service-agreement .portal-article-body ol{display:grid;gap:9px;margin:16px 0;padding-inline-start:26px;list-style:decimal}
+.portal-service-agreement .portal-article-body li{padding-inline-start:8px}
+@media(max-width:640px){
+ .portal-service-agreement .portal-article-body :is(th,td){padding:10px;font-size:13px}
+ .portal-service-agreement .portal-article-body th{width:34%}
+}
 .portal-article-page .portal-image-album-item img{width:100%;height:100%;object-fit:contain}
 .portal-article-page .portal-article-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:0;padding:0}
 .portal-article-toolbar>button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;margin:0;padding:7px 11px;border:1px solid #dce7ee;border-radius:9px;background:#fff;color:#476a80;font:inherit;font-size:10px;line-height:1.8;cursor:pointer}

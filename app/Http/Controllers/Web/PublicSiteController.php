@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\CommunityController;
 use App\Models\Organization;
 use App\Services\PortalView;
+use App\Services\ServiceAgreementPages;
 use App\Services\Html;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -62,7 +63,16 @@ final class PublicSiteController
         $data = ['page'=>$page,'path'=>$path,'title'=>$title,'county'=>$county,'organization'=>$organization?->toArray(),'home'=>$home,'settings'=>$home['settings'] ?? [],'navigation'=>$ui->navigation($home['menus'] ?? [], $county),'section'=>$section,'items'=>[],'meta'=>null,'view'=>'generic'];
         $countyPage = $county && $organization && isset(\App\Services\CountyPortal::pages()[$path])
             ? \App\Models\Content::visible()->where('organization_id',$organization->id)->where('locale',$query['locale'])->where('type','page')->where('metadata->portal_path',$path)->latest('updated_at')->first() : null;
-        if ($countyPage) {
+        $agreementKey = $county ? null : ServiceAgreementPages::keyForPath($path);
+        if ($agreementKey) {
+            $rootId = $home['organization']['id'] ?? null;
+            abort_unless($rootId, 404);
+            $agreement = ServiceAgreementPages::query($agreementKey, $rootId)->visible()->firstOrFail();
+            $data['content'] = $agreement->toArray();
+            $data['agreementKey'] = $agreementKey;
+            $data['title'] = $agreement->title;
+            $data['view'] = 'service-agreement';
+        } elseif ($countyPage) {
             $data += $public->content($r,$countyPage->id)->getData(true)['data'];
             $data['title']=$countyPage->title;$data['view']='article';
         } elseif ($path==='/' || in_array($path,['/en','/ar'],true)) {

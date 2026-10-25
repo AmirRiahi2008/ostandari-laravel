@@ -146,6 +146,7 @@ final class PortalView
 
     public function moduleAllowed(array $module, \App\Models\User $user): bool
     {
+        if (isset($module['service_agreement']) && !$user->hasGlobalAccess() && $user->organization?->type !== 'governorate') return false;
         if ($module['path'] === '/panel/admin/annual-slogan') return Workspace::mayManageAnnualSlogan($user);
         if (!$user->hasPermission($module['permission'])) return false;
         if (Workspace::context($user)['type'] === 'county' && in_array($module['path'], ['/panel/admin/governors','/panel/admin/counties','/panel/admin/settings','/panel/admin/item-order','/panel/admin/roles','/panel/admin/internal-users','/panel/admin/external-users','/panel/admin/subscribers'], true)) return false;

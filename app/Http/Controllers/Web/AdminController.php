@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Api\SystemController;
 use App\Services\PortalView;
+use App\Services\ServiceAgreementPages;
 use App\Services\Workspace;
 use Illuminate\Http\Request;
 
@@ -37,10 +38,18 @@ final class AdminController
         if(preg_match('~^(/panel/admin/reports)/([^/]+)/edit$~',$modulePath,$report)){ $modulePath=$report[1];$reference=$report[2]; }
         elseif(preg_match('~^(.+)/(new)$~',$modulePath,$editor)){ $modulePath=$editor[1];$mode='create'; }
         elseif(preg_match('~^(.+)/([^/]+)/edit$~',$modulePath,$editor)){ $modulePath=$editor[1];$id=$editor[2];$mode='edit'; }
-        $available=$meta['modules'];
+        $available=[...$meta['modules'], ...ServiceAgreementPages::modules()];
         if($context['type']==='county')$available[]=['path'=>'/panel/admin/portal','title'=>'ظاهر و اطلاعات پرتال','description'=>'معرفی شهرستان، تصاویر، اطلاعات تماس، منوها و نمایش بخش‌ها','section'=>'appearance','resource'=>'','permission'=>'organizations.manage','showInNavigation'=>true,'canCreate'=>false,'canEdit'=>true];
         $module=collect($available)->firstWhere('path',$modulePath);
         if($module) abort_unless($ui->moduleAllowed($module,$user),403);
+        if (isset($module['service_agreement'])) {
+            $rootId = \App\Models\Organization::active()->where('type','governorate')->orderBy('id')->value('id');
+            abort_unless($rootId, 503, 'اطلاعات استانداری آماده نیست.');
+            $record = ServiceAgreementPages::query($module['service_agreement'], $rootId)->first();
+            abort_unless($record, 503, 'متن این صفحه هنوز وارد نشده است. دستور portal:import-service-agreements را اجرا کنید.');
+            \App\Services\Access::organization($user, $record->organization_id);
+            return redirect('/panel/admin/pages/'.$record->id.'/edit');
+        }
         if($module && $context['type']==='county')$module=$this->countyModule($module,$ui,$context['county']);
         $utility=['/panel/admin/account'=>'حساب کاربری','/panel/admin/logout'=>'خروج از مدیریت'];
         abort_unless($module || $modulePath==='/panel/admin' || isset($utility[$modulePath]),404);
