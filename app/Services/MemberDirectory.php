@@ -34,6 +34,7 @@ final class MemberDirectory
             foreach($names as $name)if(!is_string($name) || trim($name)==='' || mb_strlen($name)>255)throw new \RuntimeException('Invalid directory name.');
         }
 
+        if($import=Setting::where('key',self::IMPORT_KEY)->first())return [...$import->value,'already_imported'=>true];
         return DB::transaction(function()use($groups,$file){
             $root=Organization::active()->where('type','governorate')->orderBy('id')->lockForUpdate()->firstOrFail();
             if($import=Setting::where('key',self::IMPORT_KEY)->first())return [...$import->value,'already_imported'=>true];
@@ -45,20 +46,30 @@ final class MemberDirectory
                 if($category->trashed() || !$category->is_active || $category->organization_id && (int)$category->organization_id!==$root->id)
                     throw new \RuntimeException('Directory group is disabled or belongs to another portal: '.$group['slug']);
                 $result['groups'][$key]=0;
+                $existing=Member::withTrashed()->where('organization_id',$root->id)->where('locale','fa')->where('kind',$group['kind'])
+                    ->whereIn('name',$groups[$key]['names'])->where(fn($q)=>$q->where('category_id',$category->id)->orWhereNull('category_id'))
+                    ->orderBy('id')->get()->groupBy('name');
+                $new=[];$attach=[];$now=now();
                 foreach($groups[$key]['names'] as $index=>$name){
-                    $member=Member::withTrashed()->where('organization_id',$root->id)->where('locale','fa')->where('kind',$group['kind'])
-                        ->where('name',$name)->where(fn($q)=>$q->where('category_id',$category->id)->orWhereNull('category_id'))->orderBy('id')->first();
+                    $member=$existing->get($name)?->first();
                     if($member){
                         if($member->trashed() || !$member->is_active){$result['skipped']++;continue;}
-                        if(!$member->category_id)$member->update(['category_id'=>$category->id]);
-                        $result['existing']++;
+                        if(!$member->category_id)$attach[]=$member->id;
+                        $result['existing']++;$result['member_ids'][]=$member->id;
                     }else{
-                        $member=Member::create(['organization_id'=>$root->id,'county_id'=>null,'category_id'=>$category->id,
+                        $new[]=['organization_id'=>$root->id,'county_id'=>null,'category_id'=>$category->id,
                             'locale'=>'fa','kind'=>$group['kind'],'name'=>$name,'position'=>$group['position'],
-                            'priority'=>$index+1,'is_current'=>false,'is_active'=>true]);
+                            'priority'=>$index+1,'is_current'=>false,'is_active'=>true,'created_at'=>$now,'updated_at'=>$now];
                         $result['created']++;
                     }
-                    $result['groups'][$key]++;$result['member_ids'][]=$member->id;
+                    $result['groups'][$key]++;
+                }
+                if($attach)Member::whereIn('id',$attach)->update(['category_id'=>$category->id]);
+                if($new){
+                    Member::insert($new);
+                    $ids=Member::where('organization_id',$root->id)->where('locale','fa')->where('kind',$group['kind'])
+                        ->where('category_id',$category->id)->whereIn('name',array_column($new,'name'))->orderBy('priority')->pluck('id')->all();
+                    $result['member_ids']=[...$result['member_ids'],...$ids];
                 }
             }
             Setting::create(['key'=>self::IMPORT_KEY,'value'=>$result,'is_public'=>false]);

@@ -6,7 +6,7 @@ use App\Models\{Category, Media, Member, Organization, Role, Setting, User};
 use App\Services\{MemberDirectory, PortalView};
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Support\Facades\{File, Http};
+use Illuminate\Support\Facades\{DB, File, Http};
 use Tests\TestCase;
 
 final class MemberDirectoryTest extends TestCase
@@ -27,7 +27,10 @@ final class MemberDirectoryTest extends TestCase
         $governor=Member::create(['organization_id'=>$root->id,'name'=>'Current provincial governor','kind'=>'governor','position'=>'استاندار','is_current'=>true]);
         $existing=Member::create(['organization_id'=>$root->id,'name'=>'محمد ابراهیم تولایی','kind'=>'manager','position'=>'Existing detailed position','phone'=>'01112345678']);
         $accounts=User::pluck('password','id')->all();$roles=Role::pluck('permissions','id')->all();
+        DB::enableQueryLog();
         $result=app(MemberDirectory::class)->import();
+        $queries=count(DB::getQueryLog());DB::disableQueryLog();DB::flushQueryLog();
+        $this->assertLessThan(40,$queries,'The directory import must batch its database requests so remote databases do not stall startup.');
         $this->assertSame(197,$result['created']);$this->assertSame(1,$result['existing']);
         $this->assertSame([2=>4,1=>24,3=>148,4=>22],$result['groups']);
         $this->assertSame('Existing detailed position',$existing->fresh()->position);
