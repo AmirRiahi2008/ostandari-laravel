@@ -103,7 +103,8 @@ final class PortalView
 
     public function menu(array $menus, string $key): ?array
     {
-        return collect($menus)->firstWhere('key', $key);
+        $menu = collect($menus)->firstWhere('key', $key);
+        return $menu ? [...$menu, 'items' => RetiredSections::entries($menu['items'] ?? [])] : null;
     }
 
     public function countyTitle(string $title, ?array $county): string
@@ -142,10 +143,10 @@ final class PortalView
 
     public function customLinks(array $home, string $placement, ?array $county = null): array
     {
-        return array_values(array_map(fn ($page) => ['id' => 'custom-page-'.$page['id'], 'title' => $page['link_title'] ?: $page['title'],
+        return RetiredSections::entries(array_values(array_map(fn ($page) => ['id' => 'custom-page-'.$page['id'], 'title' => $page['link_title'] ?: $page['title'],
             'href' => $this->href($page['path'], $county), 'url' => $this->href($page['path'], $county), 'custom_page' => true,
             'link_style' => $page['link_style'], 'image' => $page['link_style'] === 'image' ? ($page['link_image'] ?? null) : null,
-            'children' => []], array_filter($home['custom_pages'] ?? [], fn ($page) => in_array($placement, $page['placements'] ?? [], true))));
+            'children' => []], array_filter($home['custom_pages'] ?? [], fn ($page) => in_array($placement, $page['placements'] ?? [], true)))));
     }
 
     public function section(string $path): ?array

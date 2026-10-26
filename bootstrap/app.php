@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(web: __DIR__.'/../routes/web.php', api: __DIR__.'/../routes/api.php', commands: __DIR__.'/../routes/console.php', health: '/up')
-    ->withCommands([\App\Console\Commands\PrepareLocalAdmin::class, \App\Console\Commands\CreatePublicRelations::class, \App\Console\Commands\CreateAdministrator::class, \App\Console\Commands\PrepareEventAlerts::class, \App\Console\Commands\ImportMemberDirectory::class, \App\Console\Commands\ImportServiceAgreements::class, \App\Console\Commands\PrepareCustomPages::class])
+    ->withCommands([\App\Console\Commands\PrepareLocalAdmin::class, \App\Console\Commands\CreatePublicRelations::class, \App\Console\Commands\CreateAdministrator::class, \App\Console\Commands\PrepareEventAlerts::class, \App\Console\Commands\ImportMemberDirectory::class, \App\Console\Commands\ImportServiceAgreements::class, \App\Console\Commands\PrepareCustomPages::class, \App\Console\Commands\ImportUnitDuties::class])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['active' => EnsureActiveUser::class, 'permission' => RequirePermission::class, 'staff' => RequireStaff::class, 'portal' => \App\Http\Middleware\EnforcePortalScope::class]);
         $middleware->api(append: [NormalizeIdentity::class]);

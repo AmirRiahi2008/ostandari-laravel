@@ -5,7 +5,7 @@
     $local=fn($href)=>$county ? preg_replace('~^/'.preg_quote($county['slug'],'~').'(?=/|\?|$)~','',$href) ?: '/' : $href;
     $rootLink=fn($href)=>collect($navigation)->first(fn($item)=>$local($item['href'])===$href);
     $categories=array_values(array_filter($navigation,fn($item)=>!in_array($local($item['href']),['/','/transparency','/managers','/duties','/about','/polls'],true)));
-    $utility=[['تماس با ما','/contact'],['دسترسی سریع','/quick-access'],['سامانه شفافیت','/transparency'],['قوانین و مقررات','/regulations'],['دسترسی آزاد به اطلاعات','/information']];
+    $utility=[['تماس با ما','/contact'],['دسترسی سریع','/quick-access'],['سامانه شفافیت','/transparency'],['قوانین و مقررات','/regulations']];
     if($county && ($utilityMenu=$ui->menu($home['menus']??[],'portal-utility'))!==null)$utility=array_map(fn($item)=>[$item['title'],!empty($item['content_id'])?'/content/'.$item['content_id']:($item['url']??'/')],$utilityMenu['items']??[]);
 @endphp
 <header class="header-container" data-portal-ui="header-20261024" data-alpine-header="true" data-county-header="{{ $county['slug'] ?? '' }}" x-data="portalHeader" @keydown.escape.window="dismiss()" @click.outside="mega=false;language=false">

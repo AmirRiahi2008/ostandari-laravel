@@ -33,7 +33,7 @@ export const adminExtraPages: Record<
     defaults: { type: 'event' },
   },
   '/panel/admin/duties': {
-    title: 'شرح وظایف',
+    title: 'شرح وظایف واحدها',
     resource: 'contents',
     defaults: { type: 'duty' },
   },

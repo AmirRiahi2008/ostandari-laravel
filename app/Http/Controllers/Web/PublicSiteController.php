@@ -67,6 +67,9 @@ final class PublicSiteController
         $countyPage = $county && $organization && isset(\App\Services\CountyPortal::pages()[$path])
             ? \App\Models\Content::visible()->where('organization_id',$organization->id)->where('locale',$query['locale'])->where('type','page')->where('metadata->portal_path',$path)->latest('updated_at')->first() : null;
         $agreementKey = $county ? null : ServiceAgreementPages::keyForPath($path);
+        $dutySource = \App\Services\UnitDuties::sourceForPath($path);
+        $dutyRecord = $dutySource ? \App\Services\UnitDuties::importedPage($path, $home['organization']['id'] ?? null) : null;
+        $dutyReport = $dutySource && !$county ? \App\Services\UnitDuties::report() : null;
         if ($customPage) {
             $data['customPage'] = $customPage->toArray();
             $data['title'] = $customPage->title;
@@ -79,6 +82,17 @@ final class PublicSiteController
             $data['agreementKey'] = $agreementKey;
             $data['title'] = $agreement->title;
             $data['view'] = 'service-agreement';
+        } elseif ($dutyRecord || $dutySource && $dutyReport && (isset($dutyReport['content_ids'][$dutySource['source_id']]) || in_array($dutySource['source_id'], $dutyReport['skipped_ids'], true))) {
+            abort_unless($dutyRecord, 404);
+            $data += $public->content($r, $dutyRecord->id)->getData(true)['data'];
+            $data['title'] = $dutyRecord->title;
+            $data['view'] = 'duty';
+        } elseif ($path === '/duties' || ($dutyGroup = \App\Services\UnitDuties::groupForPath($path))) {
+            $result = $public->contents($r->duplicate([...$query, 'per_page' => 100]), 'duty')->getData(true);
+            $data['items'] = $county && !$organization ? [] : $result['data'];
+            if (!empty($dutyGroup)) $data['items'] = array_values(array_filter($data['items'], fn ($unit) => ($unit['duty_group'] ?? null) === $dutyGroup));
+            $data['meta'] = $result['meta'];
+            $data['view'] = 'duties';
         } elseif ($countyPage) {
             $data += $public->content($r,$countyPage->id)->getData(true)['data'];
             $data['title']=$countyPage->title;$data['view']='article';
@@ -97,7 +111,7 @@ final class PublicSiteController
             abort_if($county && ($payload['content']['organization_id'] ?? null) !== $organization?->id, 404);
             abort_if($match[1]==='duties' && ($payload['content']['type'] ?? '')!=='duty',404);
             $data += $payload;
-            $data['title']=$payload['content']['title'];$data['view']='article';
+            $data['title']=$payload['content']['title'];$data['view']=($payload['content']['type']??'')==='duty'?'duty':'article';
         } elseif ($section && ($section['kind'] ?? '')==='article') {
             $payload = $public->contentSlug($r, $section['record_type'] ?? 'page', $section['record_slug'] ?? 'official-page-'.$section['id'])->getData(true)['data'];
             abort_if($county && ($payload['content']['organization_id']??null)!==$organization?->id,404);
@@ -142,7 +156,7 @@ final class PublicSiteController
             } elseif (in_array($path,['/install','/download'],true)) {$data['view']='install';
             } elseif ($path==='/counties') {$data['view']='counties';
             } elseif ($path==='/quick-access') {
-                $data['items']=array_map(fn($destination)=>['href'=>$destination,'title'=>$meta['publicTitles'][$destination]??'خدمات الکترونیکی'],['/news','/counties','/services','/services/provincial','/contact','/track','/managers','/duties','/gallery','/transparency','/information','/regulations','/faq','/polls','/links','/citizen']);
+                $data['items']=array_map(fn($destination)=>['href'=>$destination,'title'=>$meta['publicTitles'][$destination]??'خدمات الکترونیکی'],['/news','/counties','/services','/services/provincial','/contact','/track','/managers','/duties','/gallery','/transparency','/regulations','/faq','/polls','/links','/citizen']);
                 $data['items']=[...$data['items'], ...$ui->customLinks($home,'quick',$county)];
             } elseif (in_array($path,['/regulations','/privacy'],true)) {$data['view']='terms';
             } elseif (in_array($path,['/contact','/contact-us','/ideas','/support'],true)) {$data['view']='contact';

@@ -44,6 +44,7 @@ final class ResourceRegistry
             'rules' => ['type' => ['required', Rule::in(config('portal.content_types'))], 'locale' => $locale, 'organization_id' => $org, 'category_id' => $category,
                 'cover_media_id' => $image, 'title' => $text, 'slug' => $optional, 'subtitle' => $optional, 'excerpt' => ['nullable', 'string', 'max:4000'],
                 'news_scope' => ['nullable', Rule::in(array_keys(NewsFeeds::LABELS))],
+                'duty_group' => ['nullable', 'string', 'max:255'],
                 'portal_path' => ['nullable', Rule::in(array_keys(CountyPortal::pages()))],
                 'body' => ['required', 'string', 'max:1000000'], 'metadata' => ['nullable', 'array', 'max:30'], 'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
                 'is_featured' => $flag, 'show_in_slideshow' => $flag, 'comments_enabled' => $flag, 'priority' => $priority, 'published_at' => $date, 'expires_at' => $date,

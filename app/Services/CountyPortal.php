@@ -132,7 +132,7 @@ final class CountyPortal
             $simple = fn ($rows) => array_map(fn ($row) => ['title'=>$row[0], 'href'=>$ui->href($row[1],$county)], $rows);
             $items = match ($group) {
                 'main'=>$ui->navigation([], $county),
-                'utility'=>$simple([['تماس با ما','/contact'],['دسترسی سریع','/quick-access'],['سامانه شفافیت','/transparency'],['قوانین و مقررات','/regulations'],['دسترسی آزاد به اطلاعات','/information']]),
+                'utility'=>$simple([['تماس با ما','/contact'],['دسترسی سریع','/quick-access'],['سامانه شفافیت','/transparency'],['قوانین و مقررات','/regulations']]),
                 'quick'=>$simple([['میز خدمت الکترونیکی','/services'],['ارتباط با فرمانداری','/contact'],['پیگیری درخواست‌ها','/citizen']]),
                 'footer'=>$simple([['صفحه اصلی','/'],['معرفی شهرستان','/about'],['تماس با ما','/contact'],['خدمات الکترونیکی','/services'],['اخبار','/news']]),
             };

@@ -57,8 +57,29 @@
  [data-section='site'] [data-alpine-header][data-portal-ui] .hum-logo img{width:64px;height:70px}
 }
 
-[data-section='site'] [data-alpine-header][data-portal-ui] .ai-menu-item{align-items:center}
+[data-section='site'] [data-alpine-header][data-portal-ui] .ai-menu-item{align-items:center;justify-content:center;flex-direction:row}
 [data-section='site'] [data-alpine-header][data-portal-ui] .ai-menu-item>.rast{height:40px;padding-inline:10px;border-radius:12px}
+.portal-duties-directory{display:grid;gap:30px}
+.portal-duty-group>header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #dce7ed}
+.portal-duty-group>header h2{margin:0;color:#154f68;font-size:18px;line-height:1.9}
+.portal-duty-group>header>span{flex:none;border-radius:20px;padding:4px 12px;background:#eaf5f5;color:#347578;font-size:12px}
+.portal-duty-item h3{margin:12px 0;color:#21465e;font-size:15px;line-height:1.9;font-weight:700}
+.portal-duty-item h3 a{color:inherit;text-decoration:none}
+.portal-duty-item h3 a:hover{color:#087f85}
+.portal-duty-detail-nav{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:18px;font-size:13px}
+.portal-duty-detail-nav>a{color:#087f85;text-decoration:none}
+.portal-duty-detail-nav>span{padding-inline-start:14px;border-inline-start:1px solid #d8e3e9;color:#6b7f8b}
+.portal-duty-detail .portal-article-body{white-space:normal}
+.portal-duty-detail .portal-article-body :is(ol,ul){padding-inline-start:1.7em;margin-block:1.1em}
+.portal-duty-detail .portal-article-body li{padding-inline-start:.4em;margin-block:.7em;line-height:2.2}
+.portal-duty-detail .portal-article-body li::marker{color:#087f85;font-weight:700}
+.portal-duty-source{margin-block:22px;color:#6b7f8b;font-size:12px}
+.portal-duty-source a{color:#087f85}
+.portal-duty-import-status{padding:14px 18px;border:1px solid #d9e5eb;border-radius:12px;margin-block:0 20px;background:#f8fafc;font-size:13px}
+.portal-duty-import-status summary{cursor:pointer;color:#355567}
+.portal-duty-import-status ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.portal-duty-import-status li{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.portal-duty-import-status a{flex:none;color:#087f85}
 /* The emblem itself covers the moving slogan; no rectangular gap is cut out. */
 [data-section='site'] [data-alpine-header][data-portal-ui] .header-paen .marquee{position:relative;container-type:inline-size;margin:0;mask-image:none;-webkit-mask-image:none}
 [data-section='site'] [data-alpine-header][data-portal-ui] .header-paen .marquee-content{display:flex;align-items:center;gap:0;width:max-content;height:100%;animation:portal-slogan-scroll 30s linear -10s infinite;will-change:transform}

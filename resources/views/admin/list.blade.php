@@ -1,3 +1,6 @@
+@if($modulePath==='/panel/admin/duties')
+@include('admin.duties-import-status')
+@endif
 <section class="portal-admin-content portal-resource-list" aria-label="{{ $title }}">@if($context['type']!=='county')<p class="portal-admin-help">{{ $module['description'] }}</p>@endif<div class="portal-admin-toolbar">
 @if($module['canCreate'] && $context['can_write'] && !(!$context['is_global']&&in_array($module['resource'],['organizations','counties'],true)))<a class="portal-button portal-create-button" id="cbnOpenCreateMenuModalBtn" href="{{ $moduleUrl }}/new">＋ افزودن {{ $module['itemName'] }}</a>@endif
 <form class="search-box-wrapper" role="search"><label for="searchInput">جستجو در {{ $title }}</label><div><input id="searchInput" name="q" type="search" placeholder="نام یا عنوان مورد را بنویسید…" value="{{ request('q') }}"><button class="portal-button" type="submit">جستجو</button></div></form><a href="{{ $context['dashboard_path'] }}">بازگشت به داشبورد</a></div>

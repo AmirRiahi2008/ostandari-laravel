@@ -154,6 +154,15 @@ class ResourcePayload
             }
         }
         if ($sample instanceof Content) {
+            if (array_key_exists('duty_group', $data['metadata'] ?? [])) {
+                Validator::make(['duty_group' => $data['metadata']['duty_group']], ['duty_group' => ['nullable', 'string', 'max:255']])->validate();
+                if (($effective['type'] ?? '') !== 'duty' && !empty($data['metadata']['duty_group'])) throw ValidationException::withMessages(['duty_group' => 'گروه واحد فقط برای شرح وظایف قابل انتخاب است.']);
+            }
+            if (array_key_exists('duty_group', $data)) {
+                if (($effective['type'] ?? '') !== 'duty' && !empty($data['duty_group'])) throw ValidationException::withMessages(['duty_group' => 'گروه واحد فقط برای شرح وظایف قابل انتخاب است.']);
+                $data['metadata'] = array_replace($model?->metadata ?? [], $data['metadata'] ?? [], ['duty_group' => $data['duty_group'] ?: null]);
+                unset($data['duty_group']);
+            }
             if (array_key_exists('portal_path', $data) || array_key_exists('portal_path', $data['metadata'] ?? [])) {
                 $path = array_key_exists('portal_path', $data) ? $data['portal_path'] : ($data['metadata']['portal_path'] ?? null);
                 if ($path) {
