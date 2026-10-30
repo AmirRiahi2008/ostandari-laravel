@@ -11,6 +11,7 @@ final class StaffPortal extends Model
     public function member() { return $this->belongsTo(Member::class); }
     public function owner() { return $this->belongsTo(User::class, 'owner_user_id'); }
     public function items() { return $this->hasMany(StaffPortalItem::class); }
+    public function pages() { return $this->hasMany(StaffPortalPage::class); }
     public function assets() { return $this->hasMany(StaffPortalAsset::class); }
     public function portrait() { return $this->belongsTo(StaffPortalAsset::class, 'portrait_id'); }
     public function banner() { return $this->belongsTo(StaffPortalAsset::class, 'banner_id'); }

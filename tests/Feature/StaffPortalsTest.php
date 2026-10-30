@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\{Member, Organization, Role, Setting, StaffPortal, StaffPortalItem, User};
-use App\Services\{MemberDirectory, StaffPortals};
+use App\Services\{MemberDirectory, StaffPages, StaffPortals};
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -48,7 +48,7 @@ final class StaffPortalsTest extends TestCase
     {
         $this->assertSame(24, StaffPortal::count());
         $this->get('/managers?group=1')->assertOk()->assertSee('/staff/it', false)->assertSee('ورود به صفحه شخصی');
-        $this->get('/staff/it')->assertOk()->assertSee(StaffPortals::IT_TITLE)->assertSee('/staff-admin/it/login', false);
+        $this->get('/staff/it')->assertOk()->assertSee(StaffPortals::IT_TITLE)->assertDontSee('ورود مدیر صفحه');
         $this->it->update(['title' => 'عنوان ویرایش‌شده', 'body' => '<p>متن مدیر</p>']);
         $before = User::orderBy('id')->pluck('password', 'id')->all();
         $this->assertSame(0, StaffPortals::sync());
@@ -146,7 +146,7 @@ final class StaffPortalsTest extends TestCase
     public function test_all_panel_tabs_and_gallery_batch_upload_work_without_affecting_province_news(): void
     {
         $this->as($this->manager);
-        foreach (['profile', 'news', 'announcement', 'gallery', 'video', 'link', 'assets', 'account'] as $tab) $this->get('/staff-admin/it?tab='.$tab)->assertOk();
+        foreach (['profile', 'slide', 'pages', 'news', 'announcement', 'gallery', 'video', 'link', 'assets', 'account'] as $tab) $this->get('/staff-admin/it?tab='.$tab)->assertOk();
         foreach (array_keys(StaffPortals::KINDS) as $kind) $this->get('/staff-admin/it/items/new?kind='.$kind)->assertOk();
         $this->post('/staff-admin/it/items', $this->article(['kind' => 'gallery', 'title' => 'آلبوم فعالیت‌ها', 'images' => [UploadedFile::fake()->image('first.png'), UploadedFile::fake()->image('second.png')]]))->assertRedirect('/staff-admin/it?tab=gallery');
         $this->assertSame(2, $this->it->items()->where('kind', 'gallery')->count());
@@ -210,5 +210,126 @@ final class StaffPortalsTest extends TestCase
         $this->assertSame($before + 1, StaffPortal::count());
         $this->assertDatabaseHas('staff_portals',['member_id'=>$id]);
         $this->assertFalse(Setting::where('key',StaffPortals::SYNC_KEY)->firstOrFail()->is_public);
+    }
+
+    private function pageData(array $extra = []): array
+    {
+        return $extra + ['title' => 'خدمات واحد فناوری', 'path' => 'services', 'body' => '<p>متن اختصاصی صفحه واحد</p>',
+            'nav_title' => 'خدمات واحد', 'show_in_navigation' => 1, 'status' => 'published', 'priority' => 1, 'published_at' => null];
+    }
+
+    public function test_default_staff_header_has_only_its_own_home_and_three_tabs_with_media_below(): void
+    {
+        $response = $this->get('/staff/it')->assertOk()->assertSee('data-staff-slideshow', false)->assertDontSee('ورود مدیر صفحه');
+        $html = $response->getContent();
+        preg_match('~<nav class="staff-site-navigation".*?</nav>~s', $html, $nav);
+        $this->assertSame(1, substr_count($nav[0], '<a '));
+        $this->assertStringContainsString('href="/staff/it"', $nav[0]);
+        preg_match('~<nav class="staff-public-tabs".*?</nav>~s', $html, $tabs);
+        $this->assertSame(3, substr_count($tabs[0], '<a '));
+        $this->assertStringNotContainsString('gallery', $tabs[0]);
+        $this->assertStringNotContainsString('video', $tabs[0]);
+        $this->assertLessThan(strpos($html, 'id="staff-gallery"'), strpos($html, 'class="staff-public-tabs"'));
+        $this->assertLessThan(strpos($html, 'id="staff-videos"'), strpos($html, 'id="staff-gallery"'));
+        $this->get($this->other->publicPath())->assertOk()->assertSee('href="'.$this->other->publicPath().'"', false);
+        $this->get('/')->assertOk()->assertDontSee('staff-site-navigation');
+        $this->get('/amol')->assertOk()->assertDontSee('staff-site-navigation');
+    }
+
+    public function test_custom_pages_are_owned_published_and_added_to_only_their_managers_menu(): void
+    {
+        $this->as($this->manager);
+        $this->get('/staff-admin/it/pages/new')->assertOk()->assertSee('نمایش در منو');
+        $this->post('/staff-admin/it/pages', $this->pageData())->assertRedirect('/staff-admin/it?tab=pages');
+        $page = $this->it->pages()->firstOrFail();
+        $this->get('/staff-admin/it?tab=pages')->assertOk()->assertSee($page->title);
+        $this->get('/staff-admin/it/pages/'.$page->id.'/edit')->assertOk()->assertSee($page->path);
+        $this->get('/staff/it/pages/services')->assertOk()->assertSee('متن اختصاصی صفحه واحد')->assertSee('aria-current="page">خدمات واحد', false);
+        $this->get('/staff/it')->assertSee('href="/staff/it/pages/services"', false);
+        $this->get($this->other->publicPath())->assertDontSee('/staff/it/pages/services', false);
+        $this->get($this->other->publicPath().'/pages/services')->assertNotFound();
+        $this->post('/staff-admin/it/pages/'.$page->id, $this->pageData(['show_in_navigation' => 0]))->assertRedirect();
+        $this->get('/staff/it')->assertDontSee('/staff/it/pages/services', false);
+        $this->get('/staff/it/pages/services')->assertOk();
+        $this->post('/staff-admin/it/pages/'.$page->id, $this->pageData(['status' => 'draft']))->assertRedirect();
+        $this->get('/staff/it/pages/services')->assertNotFound();
+        $this->post('/staff-admin/it/pages/'.$page->id, $this->pageData(['published_at' => now()->addDay()->toIso8601String()]))->assertRedirect();
+        $this->get('/staff/it/pages/services')->assertNotFound();
+        $this->get('/staff/it')->assertDontSee('/staff/it/pages/services', false);
+        $this->post('/staff-admin/it/pages/'.$page->id, $this->pageData(['published_at' => now()->subMinute()->toIso8601String()]))->assertRedirect();
+        $this->get('/staff/it/pages/services')->assertOk();
+        $this->post('/staff-admin/it/pages/'.$page->id.'/delete')->assertRedirect();
+        $this->get('/staff/it/pages/services')->assertNotFound();
+        $this->get('/staff/it')->assertDontSee('/staff/it/pages/services', false);
+        $this->post('/staff-admin/it/pages', $this->pageData())->assertSessionHasErrors('path');
+        $this->get('/staff-admin/it?tab=pages&trash=1')->assertOk()->assertSee('بازیابی');
+        $this->post('/staff-admin/it/pages/'.$page->id.'/restore')->assertRedirect();
+        $this->get('/staff/it/pages/services')->assertOk();
+    }
+
+    public function test_page_routes_menu_order_and_images_cannot_escape_the_owner(): void
+    {
+        $foreign = StaffPages::save($this->other, $this->pageData());
+        $foreignImage = StaffPortals::upload($this->other, UploadedFile::fake()->image('other.png'));
+        $this->as($this->manager);
+        foreach (['/edit', ''] as $suffix) {
+            if ($suffix) $this->get('/staff-admin/it/pages/'.$foreign->id.$suffix)->assertNotFound();
+            else $this->post('/staff-admin/it/pages/'.$foreign->id, $this->pageData())->assertNotFound();
+        }
+        foreach (['delete','restore'] as $action) $this->post('/staff-admin/it/pages/'.$foreign->id.'/'.$action)->assertNotFound();
+        $this->post('/staff-admin/it/pages', $this->pageData(['staff_portal_id' => $this->other->id]))->assertForbidden();
+        $this->post('/staff-admin/it/pages', $this->pageData(['body' => '<p>تصویر</p><img src="'.$foreignImage->url.'">']))->assertSessionHasErrors('body');
+        foreach (['../services', 'folder/page', 'javascript:alert(1)', 'a?x=1', ['bad']] as $path)
+            $this->post('/staff-admin/it/pages', $this->pageData(['path' => $path]))->assertSessionHasErrors('path');
+        $this->post('/staff-admin/it/pages', $this->pageData(['path' => 'تماس', 'body' => '<p>متن تماس</p><script>alert(1)</script>']))->assertRedirect();
+        $this->get('/staff/it/pages/'.rawurlencode('تماس'))->assertOk()->assertSee('متن تماس')->assertDontSee('alert(1)', false);
+        StaffPages::save($this->it, $this->pageData(['path' => 'second', 'nav_title' => 'پیوند دوم', 'priority' => 20]));
+        StaffPages::save($this->it, $this->pageData(['path' => 'first', 'nav_title' => 'پیوند اول', 'priority' => 10]));
+        $this->assertSame(['تماس','first','second'], StaffPages::navigation($this->it)->pluck('path')->all());
+        $this->assertSame('خدمات واحد فناوری', $foreign->fresh()->title);
+        $this->as(User::where('username','admin')->firstOrFail());
+        $this->post('/staff-admin/it/pages', $this->pageData())->assertForbidden();
+    }
+
+    public function test_slides_are_manageable_scheduled_and_keep_assets_isolated(): void
+    {
+        $ownImage = StaffPortals::upload($this->it, UploadedFile::fake()->image('slide.png', 1280, 480));
+        $foreignImage = StaffPortals::upload($this->other, UploadedFile::fake()->image('other.png'));
+        $this->as($this->manager);
+        $this->post('/staff-admin/it/items', $this->article(['kind' => 'slide']))->assertSessionHasErrors('asset_id');
+        $this->post('/staff-admin/it/items', $this->article(['kind' => 'slide', 'asset_id' => $foreignImage->id]))->assertNotFound();
+        $this->post('/staff-admin/it/items', $this->article(['kind' => 'slide', 'asset_id' => $ownImage->id, 'url' => 'javascript:alert(1)']))->assertSessionHasErrors('url');
+        $this->post('/staff-admin/it/items', $this->article(['kind' => 'slide', 'title' => 'اسلاید منتشرشده واحد', 'asset_id' => $ownImage->id, 'url' => 'https://example.test/article']))->assertRedirect('/staff-admin/it?tab=slide');
+        $this->post('/staff-admin/it/items', $this->article(['kind' => 'slide', 'title' => 'اسلاید بعدی', 'asset_id' => $ownImage->id]))->assertRedirect();
+        StaffPortals::saveItem($this->it, $this->article(['kind'=>'slide','title'=>'اسلاید آینده','asset_id'=>$ownImage->id,'published_at'=>now()->addDay()]));
+        StaffPortals::saveItem($this->it, $this->article(['kind'=>'slide','title'=>'اسلاید پیش‌نویس','asset_id'=>$ownImage->id,'status'=>'draft']));
+        $response = $this->get('/staff/it')->assertOk()->assertSee('اسلاید منتشرشده واحد')->assertSee('اسلاید قبلی')->assertSee('اسلاید بعدی')->assertSee('https://example.test/article',false)->assertDontSee('اسلاید آینده')->assertDontSee('اسلاید پیش‌نویس');
+        $this->get($this->other->publicPath())->assertDontSee('اسلاید منتشرشده واحد');
+        $slide = $this->it->items()->where('title','اسلاید منتشرشده واحد')->firstOrFail();
+        $this->post('/staff-admin/it/items/'.$slide->id.'/delete')->assertRedirect();
+        $this->get('/staff/it')->assertDontSee('اسلاید منتشرشده واحد');
+        $this->post('/staff-admin/it/items/'.$slide->id.'/restore')->assertRedirect();
+        $this->get('/staff/it')->assertSee('اسلاید منتشرشده واحد');
+    }
+
+    public function test_preparation_upgrades_an_existing_installation_without_resetting_owners_or_content(): void
+    {
+        $article = StaffPortals::saveItem($this->it, $this->article());
+        $password = $this->manager->password;
+        // Simulate the previous deployed schema: staff portals exist and were already synchronized.
+        \Illuminate\Support\Facades\Schema::drop('staff_portal_pages');
+        \Illuminate\Support\Facades\DB::table('migrations')->where('migration','2026_10_30_000002_create_staff_portal_pages')->delete();
+        $this->assertTrue(StaffPortals::synchronized());
+        $this->assertFalse(StaffPages::ready());
+        $this->get('/staff/it')->assertOk()->assertSee('data-staff-slideshow',false);
+        $this->artisan('portal:prepare-staff-portals')->assertSuccessful();
+        $this->assertTrue(StaffPages::ready());
+        $page = StaffPages::save($this->it, $this->pageData());
+        $this->artisan('portal:prepare-staff-portals')->assertSuccessful();
+        $this->assertSame($this->manager->id,$this->it->fresh()->owner_user_id);
+        $this->assertSame($password,$this->manager->fresh()->password);
+        $this->assertSame('خبر اختصاصی مدیر فناوری اطلاعات',$article->fresh()->title);
+        $this->assertSame('خدمات واحد فناوری',$page->fresh()->title);
+        $this->get('/staff/it/pages/services')->assertOk();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\StaffPortals;
+use App\Services\{StaffPages, StaffPortals};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{Artisan, DB};
 
@@ -15,7 +15,7 @@ final class PrepareStaffPortals extends Command
         $lock = false;
         try {
             $this->line(config('website.staff_demo_hash') ? 'Staff test account: hash configured.' : 'Staff test account: provisioning disabled.');
-            if (StaffPortals::ready() && StaffPortals::synchronized() && !$this->option('resync')) {
+            if (StaffPortals::ready() && StaffPages::ready() && StaffPortals::synchronized() && !$this->option('resync')) {
                 $this->prepareTestAccount();
                 $this->info('Staff pages already prepared; existing content and accounts preserved.');
                 return self::SUCCESS;
@@ -24,6 +24,11 @@ final class PrepareStaffPortals extends Command
             if (!$lock) { $this->info('Staff page setup is already running.'); return self::SUCCESS; }
             if (!StaffPortals::ready()) {
                 $result = Artisan::call('migrate', ['--path' => 'database/migrations/2026_10_30_000001_create_staff_portals.php', '--force' => true, '--no-interaction' => true]);
+                $this->output->write(Artisan::output());
+                if ($result !== self::SUCCESS) return $result;
+            }
+            if (!StaffPages::ready()) {
+                $result = Artisan::call('migrate', ['--path' => 'database/migrations/2026_10_30_000002_create_staff_portal_pages.php', '--force' => true, '--no-interaction' => true]);
                 $this->output->write(Artisan::output());
                 if ($result !== self::SUCCESS) return $result;
             }

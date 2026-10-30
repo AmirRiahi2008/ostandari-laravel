@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Models\{StaffPortal, StaffPortalAsset, StaffPortalItem, User};
-use App\Services\{Audit, StaffPortals};
+use App\Services\{Audit, StaffPages, StaffPortals};
 use App\Support\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Hash};
@@ -53,8 +53,9 @@ final class StaffPortalController
     {
         $portal = $this->portal($request);
         $tab = $request->query('tab', 'profile');
-        abort_unless(in_array($tab, ['profile', 'assets', 'account', ...array_keys(StaffPortals::KINDS)], true), 404);
-        $query = $portal->items()->with('asset')->where('kind', $tab)->orderBy('priority')->latest('id');
+        abort_unless(in_array($tab, ['profile', 'assets', 'account', 'pages', ...array_keys(StaffPortals::KINDS)], true), 404);
+        if ($tab === 'pages') abort_unless(StaffPages::ready(), 503, 'آماده‌سازی صفحات در حال انجام است.');
+        $query = $tab === 'pages' ? $portal->pages()->orderBy('priority')->latest('id') : $portal->items()->with('asset')->where('kind', $tab)->orderBy('priority')->latest('id');
         if ($request->boolean('trash')) $query->onlyTrashed();
         if ($request->filled('q')) {
             $request->validate(['q' => 'string|max:150']);

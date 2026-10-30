@@ -13,7 +13,7 @@ final class StaffPortals
 {
     public const ROLE = 'staff_manager';
     public const SYNC_KEY = 'imports.staff-portals.2026-10-30.v1';
-    public const KINDS = ['news' => 'اخبار', 'announcement' => 'اطلاعیه‌ها', 'gallery' => 'گالری تصاویر', 'video' => 'گالری ویدئو', 'link' => 'پیوندها'];
+    public const KINDS = ['slide' => 'اسلایدشو', 'news' => 'اخبار', 'announcement' => 'اطلاعیه‌ها', 'gallery' => 'گالری تصاویر', 'video' => 'گالری ویدئو', 'link' => 'پیوندها'];
     public const IT_MANAGER = 'سیده معصومه سجادیان امیری';
     public const IT_TITLE = 'مدیریت فناوری اطلاعات، امنیت فضای مجازی و شبکه دولت';
 
@@ -174,8 +174,8 @@ final class StaffPortals
         $data['body'] = self::cleanBody($portal, $data['body'] ?? '');
         if (in_array($data['kind'], ['news', 'announcement'], true) && trim(strip_tags($data['body'])) === '')
             throw ValidationException::withMessages(['body' => 'متن کامل را وارد کنید.']);
-        if ($data['kind'] === 'gallery' && empty($data['asset_id']))
-            throw ValidationException::withMessages(['asset_id' => 'تصویر گالری را انتخاب کنید.']);
+        if (in_array($data['kind'], ['gallery', 'slide'], true) && empty($data['asset_id']))
+            throw ValidationException::withMessages(['asset_id' => 'تصویر را بارگذاری یا از تصاویر خود انتخاب کنید.']);
         if (in_array($data['kind'], ['link', 'video'], true) && empty($data['url']))
             throw ValidationException::withMessages(['url' => 'نشانی پیوند یا ویدئو را وارد کنید.']);
         $data['published_at'] = $data['published_at'] ?? ($data['status'] === 'published' ? ($item?->published_at ?? now()) : null);

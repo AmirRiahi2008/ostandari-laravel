@@ -6,9 +6,10 @@ use App\Http\Controllers\Web\PublicSiteController;
 use App\Http\Controllers\Web\SessionController;
 use App\Http\Middleware\WebStaff;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Web\{StaffPortalController, StaffPublicController};
+use App\Http\Controllers\Web\{StaffPageController, StaffPortalController, StaffPublicController};
 use App\Http\Middleware\StaffPortalOwner;
 
+Route::get('/staff/{slug}/pages/{path}', [StaffPublicController::class, 'page'])->where('slug', '[a-z0-9-]+')->where('path', '[\pL\pN][\pL\pN_-]*');
 Route::get('/staff/{slug}/content/{id}', StaffPublicController::class)->where('slug', '[a-z0-9-]+')->whereNumber('id');
 Route::get('/staff/{slug}', StaffPublicController::class)->where('slug', '[a-z0-9-]+');
 Route::get('/staff-admin/{slug}/login', [StaffPortalController::class, 'loginPage'])->where('slug', '[a-z0-9-]+');
@@ -19,6 +20,12 @@ Route::prefix('staff-admin/{slug}')->where(['slug' => '[a-z0-9-]+'])->middleware
     Route::post('profile', [StaffPortalController::class, 'profile']);
     Route::post('logout', [StaffPortalController::class, 'logout']);
     Route::post('password', [StaffPortalController::class, 'password'])->middleware('throttle:auth');
+    Route::get('pages/new', [StaffPageController::class, 'editor']);
+    Route::post('pages', [StaffPageController::class, 'save']);
+    Route::get('pages/{id}/edit', [StaffPageController::class, 'editor'])->whereNumber('id');
+    Route::post('pages/{id}', [StaffPageController::class, 'save'])->whereNumber('id');
+    Route::post('pages/{id}/delete', [StaffPageController::class, 'remove'])->whereNumber('id');
+    Route::post('pages/{id}/restore', [StaffPageController::class, 'restore'])->whereNumber('id');
     Route::get('items/new', [StaffPortalController::class, 'editor']);
     Route::post('items', [StaffPortalController::class, 'save']);
     Route::get('items/{id}/edit', [StaffPortalController::class, 'editor'])->whereNumber('id');

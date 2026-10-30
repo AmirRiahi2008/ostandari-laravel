@@ -15,6 +15,8 @@
     <section class="staff-card"><h2>اطلاعات تماس</h2><div class="staff-form-grid"><label for="staff-phone">تلفن<input id="staff-phone" name="phone" value="{{ old('phone',$portal->phone) }}" maxlength="60" dir="ltr"></label><label for="staff-email">ایمیل<input id="staff-email" name="email" type="email" value="{{ old('email',$portal->email) }}" maxlength="255" dir="ltr"></label></div><label for="staff-address">نشانی<textarea id="staff-address" name="address" rows="2" maxlength="1000">{{ old('address',$portal->address) }}</textarea></label></section>
     <div class="staff-form-actions"><button class="staff-primary" type="submit">ذخیره مشخصات صفحه</button><a class="staff-secondary" href="{{ $portal->publicPath() }}">مشاهده صفحه</a></div>
 </form>
+@elseif($tab==='pages')
+@include('staff.pages-list')
 @elseif($tab==='assets')
 <section class="staff-card"><h2>افزودن تصویر</h2><form class="staff-upload-form" action="{{ $portal->adminPath() }}/assets" method="post" enctype="multipart/form-data">@csrf<label for="staff-upload">تصویر<input id="staff-upload" type="file" name="file" required accept="image/jpeg,image/png,image/webp"></label><button class="staff-primary" type="submit">بارگذاری</button></form></section>
 <section class="staff-card"><h2>تصاویر من</h2><div class="staff-asset-grid">@foreach($assets as $image)<figure><img src="{{ $image->url }}" alt="{{ $image->original_name }}" loading="lazy"><figcaption>{{ $image->original_name }}</figcaption></figure>@endforeach</div>{{ $assets->links() }}</section>
