@@ -11,7 +11,7 @@
     <header class="portal-member-heading">
         <div class="portal-member-portrait" x-data="{failed:false}">
             @if($image=$ui->image($person))
-                <img src="{{ $image }}" alt="{{ empty($person['media_id']) && !empty($person['image_url']) ? 'تصویر موقت' : $person['name'] }}" width="88" height="88" loading="lazy" x-show="!failed" x-init="failed=$el.complete && $el.naturalWidth===0" x-on:error="failed=true">
+                <img src="{{ $image }}" alt="{{ empty($person['media_id']) && !empty($person['image_url']) ? 'تصویر موقت' : $person['name'] }}" width="88" height="88" loading="lazy" x-show="!failed" x-init="failed=$el.complete && !!$el.currentSrc && $el.naturalWidth===0" x-on:load="failed=false" x-on:error="failed=true">
                 <span class="portal-member-avatar" x-show="failed" x-cloak aria-hidden="true">@include('icons.people')</span>
             @else
                 <span class="portal-member-avatar" aria-hidden="true">@include('icons.people')</span>

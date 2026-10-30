@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Services\Audit;
 use App\Services\FileAccess;
 use App\Services\MediaUploadPreparer;
+use App\Services\PublicImages;
 use App\Support\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -52,11 +53,21 @@ class MediaController
         $filePath = now()->format('Y/m').'/'.Str::uuid().'.'.$upload->extension;
         $stream = null;
         try {
+            $persistent = $disk === 'public' && in_array($upload->mime, PublicImages::MIMES, true);
+            if ($persistent) PublicImages::assertReady();
             $stream = fopen($upload->path, 'rb');
             abort_if($stream === false, 503, 'خواندن فایل آپلودشده ممکن نیست.');
             abort_unless(Storage::disk($disk)->put($filePath, $stream), 503, 'ذخیره فایل انجام نشد. دوباره تلاش کنید.');
-            $media = Media::create(['user_id' => $r->user()->id, 'organization_id' => $r->user()->organization_id, 'disk' => $disk, 'path' => $filePath, 'original_name' => $upload->name,
-                'mime' => $upload->mime, 'size' => $upload->size, 'visibility' => $d['visibility'], 'alt' => $d['alt'] ?? null, 'width' => $upload->width, 'height' => $upload->height]);
+            $media = DB::transaction(function () use ($r, $disk, $filePath, $upload, $d, $persistent) {
+                $media = Media::create(['user_id' => $r->user()->id, 'organization_id' => $r->user()->organization_id, 'disk' => $disk, 'path' => $filePath, 'original_name' => $upload->name,
+                    'mime' => $upload->mime, 'size' => $upload->size, 'visibility' => $d['visibility'], 'alt' => $d['alt'] ?? null, 'width' => $upload->width, 'height' => $upload->height]);
+                if ($persistent) {
+                    $bytes = file_get_contents($upload->path);
+                    abort_if($bytes === false, 503, 'خواندن فایل آپلودشده ممکن نیست.');
+                    PublicImages::save($media, $bytes);
+                }
+                return $media;
+            });
         } catch (\Throwable $e) {
             Storage::disk($disk)->delete($filePath);
             throw $e;
@@ -76,6 +87,12 @@ class MediaController
         $m = Media::findOrFail($id);
         abort_unless(FileAccess::mayRead($m, $r->user()), 404);
         if ($m->disk === 'page-assets') return response()->streamDownload(fn()=>print(\App\Services\PageImages::bytes($m)), $m->original_name, ['Content-Type'=>$m->mime,'X-Content-Type-Options'=>'nosniff']);
+        if (PublicImages::supports($m)) {
+            $bytes = PublicImages::read($m);
+            abort_if($bytes === null, 404);
+            return response()->streamDownload(fn()=>print($bytes), $m->original_name,
+                ['Content-Type'=>$m->mime, 'X-Content-Type-Options'=>'nosniff', 'Cache-Control'=>'private, no-store']);
+        }
         abort_unless(Storage::disk($m->disk)->exists($m->path), 404);
 
         return Storage::disk($m->disk)->download($m->path, $m->original_name, ['X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
@@ -100,6 +117,7 @@ class MediaController
         if ($m->disk === 'page-assets') DB::table('custom_page_images')->where('media_id',$m->id)->delete();
         elseif ($m->disk !== 'portal-icons') Storage::disk($m->disk)->delete($m->path);
         $m->delete();
+        // Retain the durable original alongside the soft-deleted media record.
         Audit::record('media.deleted',$m);
 
         return response()->noContent();

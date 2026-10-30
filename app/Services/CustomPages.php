@@ -42,7 +42,7 @@ final class CustomPages
     {
         $first = explode('/', ltrim($path, '/'))[0];
         $meta = app(PortalView::class)->data('frontend');
-        $reserved = ['staff','staff-admin','staff-assets','api','web-api','session','panel','admin','county-admin','citizen','login','register','en','ar',
+        $reserved = ['media-assets','staff','staff-admin','staff-assets','api','web-api','session','panel','admin','county-admin','citizen','login','register','en','ar',
             'forgot-password','password','verify','office','county','up','storage','design','styles','build','fonts',
             'services','service','links','gallery','forms','forum','governors','deputies','transparency','governorate',
             'duties','sitemap','rss','about','districts','units','accessibility','performance','participation',
