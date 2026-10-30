@@ -18,6 +18,7 @@ final class WebStaff
         }
         if (!$request->user()) return redirect($login.'?error=auth_required&return='.rawurlencode($request->getRequestUri()));
         abort_unless($request->user()->is_active && $request->user()->isStaff(), 403, 'این حساب به پنل مدیریت دسترسی ندارد.');
+        abort_if($request->user()->isStaffManager(), 403, 'از پنل اختصاصی صفحهٔ خود وارد شوید.');
         Workspace::assertUser($request->user());
         if ($request->routeIs('county.admin')) Workspace::assertCounty($request->user(), $county['slug']);
         return $next($request);

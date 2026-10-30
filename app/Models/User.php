@@ -31,6 +31,16 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class);
     }
 
+    public function staffPortal()
+    {
+        return $this->hasOne(StaffPortal::class, 'owner_user_id');
+    }
+
+    public function isStaffManager(): bool
+    {
+        return $this->role?->name === \App\Services\StaffPortals::ROLE;
+    }
+
     public function hasPermission(string $permission): bool
     {
         if (! $this->is_active) {
@@ -53,7 +63,7 @@ class User extends Authenticatable
 
     public function hasGlobalAccess(): bool
     {
-        return $this->access_scope === 'all' && ! $this->isPublicRelations();
+        return $this->access_scope === 'all' && ! $this->isPublicRelations() && ! $this->isStaffManager();
     }
 
     public function hasReadOnlyWorkspace(): bool
@@ -64,6 +74,7 @@ class User extends Authenticatable
     public function effectivePermissions(): array
     {
         $permissions = $this->role?->permissions ?? [];
+        if ($this->isStaffManager()) return ['staff-portal.manage'];
         if (! $this->isPublicRelations()) return $permissions;
         $allowed = \App\Services\Workspace::PUBLIC_RELATIONS_PERMISSIONS;
         return in_array('*', $permissions, true) ? $allowed : array_values(array_intersect($permissions, $allowed));

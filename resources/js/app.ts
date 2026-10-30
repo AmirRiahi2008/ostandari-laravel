@@ -21,6 +21,23 @@ const citizenDestination=()=>{
 
 Alpine.data('customPages',customPages);
 
+Alpine.data('staffEditor',()=>({
+  abort:new AbortController(),
+  async init(){
+    const {mountRichText,validateRichText}=await import('./portal/features/admin/rich-text');
+    if(this.abort.signal.aborted)return;
+    mountRichText(this.$el,this.abort.signal,false);
+    this.$el.addEventListener('submit',(event:SubmitEvent)=>{
+      try{validateRichText(this.$el);}
+      catch(error){event.preventDefault();let notice=this.$el.querySelector('[data-staff-form-error]');
+        if(!notice){notice=document.createElement('p');notice.className='staff-errors';notice.dataset.staffFormError='';notice.setAttribute('role','alert');this.$el.prepend(notice);}
+        notice.textContent=(error as Error).message;notice.scrollIntoView({block:'center'});
+      }
+    },{signal:this.abort.signal});
+  },
+  destroy(){this.abort.abort();}
+}));
+
 Alpine.data('portalPage',()=>({
   busy:false,mobileOpen:false,abort:new AbortController(),motion:undefined as undefined|(()=>void),
   async init(){

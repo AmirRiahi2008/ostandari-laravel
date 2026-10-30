@@ -8,6 +8,18 @@ export function adminDestination(user: PortalUser, requested?: string | null): s
   if (user.person_type === 'citizen' || user.is_active === false || !user.role?.permissions?.length)
     throw new Error('این حساب اجازهٔ ورود به پنل مدیریت را ندارد.');
   const workspace = user.portal_context;
+  if (workspace?.type === 'staff') {
+    const slug = workspace.staff_slug;
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) throw new Error('صفحهٔ این مدیر مشخص نیست.');
+    const home = '/staff-admin/' + slug;
+    if (!requested || /[\\\u0000-\u001f\u007f]/.test(requested)) return home;
+    try {
+      const target = new URL(requested, 'https://portal.invalid');
+      if (target.origin !== 'https://portal.invalid' || !(target.pathname === home || target.pathname.startsWith(home + '/')) ||
+          /\/(?:login|logout)$/.test(target.pathname)) return home;
+      return target.pathname + target.search + target.hash;
+    } catch { return home; }
+  }
   if (workspace?.type === 'county') {
     const slug = workspace.county?.slug;
     if (!slug || !/^[a-z0-9-]+$/.test(slug)) throw new Error('فرمانداری این حساب مشخص نیست.');

@@ -115,8 +115,9 @@ export function mountRichText(root: HTMLElement, signal: AbortSignal, preview: b
   for (const source of all<HTMLTextAreaElement>(root, 'textarea[data-rich-text]')) {
     if(source.closest('.portal-cms'))continue;
     const customPage=!!source.closest('[data-custom-page-builder]');
-    const uploadEndpoint=customPage?'admin/custom-pages/image':'media';
-    const imageEndpoint=customPage?'admin/custom-pages/images':'media';
+    const staffEndpoint=source.closest<HTMLElement>('[data-staff-portal-editor]')?.dataset.imageEndpoint;
+    const uploadEndpoint=staffEndpoint ?? (customPage?'admin/custom-pages/image':'media');
+    const imageEndpoint=staffEndpoint ?? (customPage?'admin/custom-pages/images':'media');
     const initialRequired = source.required;
     const initialHidden = source.hidden;
     const wrapper = document.createElement('div');

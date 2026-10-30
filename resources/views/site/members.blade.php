@@ -1,5 +1,6 @@
 @php
     $memberProfile=($view??null)==='members' && request()->filled('person');
+    $staffPersonalLinks=\App\Services\StaffPortals::links($items);
 @endphp
 <div class="manager-grid portal-member-grid {{ $memberProfile?'is-profile':'' }}">
 @foreach($items as $person)
@@ -24,6 +25,7 @@
         @if(!empty($person['body']))<div class="portal-article-body">{!! \App\Services\Html::clean($person['body']) !!}</div>@endif
     @endif
     <div class="portal-member-actions">
+        @if(isset($staffPersonalLinks[$person['id']]))<a class="portal-member-personal" href="{{ $staffPersonalLinks[$person['id']] }}" aria-label="ورود به صفحه شخصی {{ $person['name'] }}">ورود به صفحه شخصی <span aria-hidden="true">←</span></a>@endif
         <a class="portal-member-profile" href="{{ $ui->href('/managers?person='.$person['id'],$county) }}" aria-label="مشاهدهٔ پروفایل {{ $person['name'] }}">مشاهده پروفایل <span aria-hidden="true">←</span></a>
         <a class="portal-member-contact" href="{{ !empty($person['email']) ? 'mailto:'.$person['email'] : $ui->href('/contact',$county) }}" aria-label="ارتباط با {{ $person['name'] }}">ارتباط</a>
     </div>

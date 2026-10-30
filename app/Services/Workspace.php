@@ -11,6 +11,11 @@ final class Workspace
 
     public static function assertUser(User $user): void
     {
+        if ($user->isStaffManager()) {
+            abort_unless(StaffPortals::ready() && $user->staffPortal, 403, 'صفحهٔ این مدیر مشخص نشده است.');
+            StaffPortals::assertOwner($user, $user->staffPortal);
+            return;
+        }
         if ($user->hasGlobalAccess()) return;
         $organization = $user->organization;
         abort_unless($organization && $organization->is_active, 403, 'حساب مدیریت باید به استان یا فرمانداری فعال متصل باشد.');
@@ -48,6 +53,14 @@ final class Workspace
 
     public static function context(User $user): array
     {
+        if ($user->isStaffManager()) {
+            $portal = StaffPortals::ready() ? $user->staffPortal : null;
+            return ['type' => 'staff', 'organization_id' => $user->organization_id, 'organization_name' => $user->organization?->name,
+                'county' => null, 'can_write' => true, 'is_global' => false, 'can_manage_annual_slogan' => false,
+                'dashboard_path' => $portal?->adminPath() ?? '/staff-admin',
+                'login_path' => $portal ? $portal->adminPath().'/login' : '/panel/admin/login',
+                'public_path' => $portal?->publicPath() ?? '/', 'staff_slug' => $portal?->slug];
+        }
         if ($user->person_type === 'citizen') {
             return ['type' => 'citizen', 'organization_id' => null, 'organization_name' => null, 'county' => null,
                 'can_write' => false, 'is_global' => false, 'dashboard_path' => '/citizen', 'login_path' => '/login', 'public_path' => '/'];

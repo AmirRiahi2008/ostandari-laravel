@@ -5,7 +5,7 @@
     <div class="container-asli source-portal" data-county-portal="{{ $county['slug'] ?? '' }}">
         @include('partials.header')
         <main id="main-content" class="source-main {{ $view==='home' ? 'source-home' : 'source-content' }}">
-            @if($view!=='home' && !$county)
+            @if($view!=='home' && $view!=='staff-portal' && !$county)
                 <nav class="source-breadcrumb" aria-label="مسیر صفحه"><a href="/">صفحه اصلی</a><span aria-hidden="true">/</span>@if(in_array($view,['article','duty'],true))<span aria-current="page">{{ ['news'=>'اخبار','announcement'=>'اطلاعیه‌ها','resolution'=>'مصوبات','duty'=>'شرح وظایف واحدها','event'=>'رویدادها'][$content['type'] ?? 'news'] ?? 'مطالب' }}</span>@elseif(in_array($view,['service-agreement','custom-page'],true))<span aria-current="page">{{ $section['title'] ?? $title }}</span>@else<h1>{{ $title }}</h1>@endif</nav>
             @endif
             @include('site.'.$view)

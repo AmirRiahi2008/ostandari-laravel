@@ -12,6 +12,7 @@ final class EnforcePortalScope
     {
         $user = $request->user();
         if ($user?->isStaff()) {
+            abort_if($user->isStaffManager(), 403, 'این مسیر متعلق به پنل اختصاصی مدیر نیست.');
             Workspace::assertUser($user);
             abort_if(! $request->isMethodSafe() && $user->hasReadOnlyWorkspace() &&
                 ! ($request->routeIs('admin.annual-slogan.update', 'web.admin.annual-slogan.update') && Workspace::mayManageAnnualSlogan($user)) &&
