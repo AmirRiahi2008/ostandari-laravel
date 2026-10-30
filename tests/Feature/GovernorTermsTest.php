@@ -79,4 +79,23 @@ final class GovernorTermsTest extends TestCase
         $this->actingAs($this->admin,'web')->get('/panel/admin/governors/new')->assertOk()->assertSee('دوره تصدی (شمسی)')->assertSee('data-field="term_start_year"',false)->assertDontSee('data-field="term_start"',false);
         $this->get('/panel/admin/governors')->assertOk()->assertSee('data-column="term_period"',false);
     }
+
+    public function test_historical_and_future_solar_years_fit_the_database_and_upgrade_preserves_existing_dates(): void
+    {
+        $existing=Member::create($this->payload(['organization_id'=>$this->admin->organization_id,'term_start'=>'2024-05-15 10:30:00','term_end'=>'2025-02-01 09:20:00']));
+        $before=[$existing->getRawOriginal('term_start'),$existing->getRawOriginal('term_end')];
+        // Reproduce an installation with the original MySQL timestamp columns.
+        \Illuminate\Support\Facades\Schema::table('members',function($table){$table->timestamp('term_start')->nullable()->change();$table->timestamp('term_end')->nullable()->change();});
+        \Illuminate\Support\Facades\DB::table('migrations')->where('migration','2026_10_30_000003_expand_governor_term_dates')->delete();
+        $this->assertFalse(GovernorTerms::ready());
+        $this->postJson('/api/v1/admin/members',$this->payload(['term_start_year'=>1310,'term_end_year'=>1320]))->assertStatus(503);
+        $this->artisan('portal:prepare-governor-terms')->assertSuccessful();
+        $this->assertTrue(GovernorTerms::ready());
+        $existing->refresh();
+        $this->assertSame($before,[$existing->getRawOriginal('term_start'),$existing->getRawOriginal('term_end')]);
+        $this->postJson('/api/v1/admin/members',$this->payload(['name'=>'دوره تاریخی','term_start_year'=>1310,'term_end_year'=>1320]))->assertCreated()->assertJsonPath('data.term_period','۱۳۱۰–۱۳۲۰');
+        $this->postJson('/api/v1/admin/members',$this->payload(['name'=>'مرز بازه مجاز','term_start_year'=>1200,'term_end_year'=>1600]))->assertCreated()->assertJsonPath('data.term_period','۱۲۰۰–۱۶۰۰');
+        $this->artisan('portal:prepare-governor-terms')->assertSuccessful();
+        $this->assertSame('2024-05-15 10:30:00',$existing->fresh()->getRawOriginal('term_start'));
+    }
 }

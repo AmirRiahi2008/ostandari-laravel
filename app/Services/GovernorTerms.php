@@ -9,6 +9,12 @@ use Illuminate\Validation\ValidationException;
 /** Solar Hijri year inputs backed by the existing Gregorian term dates. */
 final class GovernorTerms
 {
+    public static function ready(): bool
+    {
+        $types = array_column(\Illuminate\Support\Facades\Schema::getColumns('members'), 'type_name', 'name');
+        return ($types['term_start'] ?? null) === 'datetime' && ($types['term_end'] ?? null) === 'datetime';
+    }
+
     public static function digits(string $value): string
     {
         return strtr($value, array_combine(preg_split('//u', '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', -1, PREG_SPLIT_NO_EMPTY), str_split('01234567890123456789')));
@@ -39,6 +45,7 @@ final class GovernorTerms
     public static function payload(array $data, ?Member $member): array
     {
         $yearInput = array_key_exists('term_start_year', $data) || array_key_exists('term_end_year', $data);
+        abort_if($yearInput && !self::ready(), 503, 'آماده‌سازی دوره‌های تصدی در حال انجام است؛ لحظاتی دیگر دوباره ذخیره کنید.');
         foreach (['term_start_year' => 'term_start', 'term_end_year' => 'term_end'] as $yearField => $dateField) {
             if (!array_key_exists($yearField, $data)) continue;
             if (array_key_exists($dateField, $data)) throw ValidationException::withMessages([$yearField => 'سال شمسی و تاریخ کامل را هم‌زمان ارسال نکنید.']);
