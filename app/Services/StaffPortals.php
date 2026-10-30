@@ -12,6 +12,7 @@ use Illuminate\Validation\{Rule, ValidationException};
 final class StaffPortals
 {
     public const ROLE = 'staff_manager';
+    public const SYNC_KEY = 'imports.staff-portals.2026-10-30.v1';
     public const KINDS = ['news' => 'اخبار', 'announcement' => 'اطلاعیه‌ها', 'gallery' => 'گالری تصاویر', 'video' => 'گالری ویدئو', 'link' => 'پیوندها'];
     public const IT_MANAGER = 'سیده معصومه سجادیان امیری';
     public const IT_TITLE = 'مدیریت فناوری اطلاعات، امنیت فضای مجازی و شبکه دولت';
@@ -46,31 +47,53 @@ final class StaffPortals
             self::eligible(Member::query())->whereKey($portal->member_id)->exists(), 403, 'این پنل فقط برای مدیر همین صفحه است.');
     }
 
-    public static function sync(): int
+    public static function synchronized(): bool
+    {
+        return \App\Models\Setting::where('key', self::SYNC_KEY)->exists();
+    }
+
+    public static function sync(bool $force = false): int
     {
         if (!self::ready()) return 0;
-        return DB::transaction(function () {
+        if (!$force && self::synchronized()) return 0;
+        return DB::transaction(function () use ($force) {
             $root = Organization::active()->where('type', 'governorate')->orderBy('id')->lockForUpdate()->first();
             if (!$root) return 0;
-            $count = 0;
-            foreach (self::eligible(Member::query())->where('organization_id', $root->id)->orderBy('id')->get() as $member) {
-                $portal = self::createForMember($member);
-                if ($portal->wasRecentlyCreated) $count++;
+            if (!$force && self::synchronized()) return 0;
+            $members = self::eligible(Member::query())->where('organization_id', $root->id)->orderBy('id')->get();
+            // A first installation can still be importing the directory in another process.
+            if ($members->isEmpty()) return 0;
+            $existing = StaffPortal::whereIn('member_id', $members->modelKeys())->pluck('member_id')->all();
+            $itTaken = StaffPortal::where('slug', 'it')->exists();
+            $rows = [];
+            foreach ($members as $member) {
+                if (in_array($member->id, $existing, true)) continue;
+                $it = !$itTaken && $member->name === self::IT_MANAGER;
+                if ($it) $itTaken = true;
+                $rows[] = ['member_id' => $member->id, ...self::initialValues($member, $it), 'created_at' => now(), 'updated_at' => now()];
             }
+            // Avoid a database round trip for each person during a stateless cold start.
+            if ($rows) StaffPortal::insertOrIgnore($rows);
+            $saved = StaffPortal::whereIn('member_id', $members->modelKeys())->pluck('member_id')->all();
+            foreach ($members as $member) if (!in_array($member->id, $saved, true)) self::createForMember($member);
             Role::firstOrCreate(['name' => self::ROLE], ['label' => 'مدیر صفحه ستادی', 'permissions' => ['staff-portal.manage'], 'is_system' => true]);
-            return $count;
+            \App\Models\Setting::updateOrCreate(['key' => self::SYNC_KEY], ['value' => ['member_ids' => $members->modelKeys(), 'completed_at' => now()->toIso8601String()], 'is_public' => false]);
+            return count(array_diff(StaffPortal::whereIn('member_id', $members->modelKeys())->pluck('member_id')->all(), $existing));
         });
+    }
+
+    private static function initialValues(Member $member, bool $it): array
+    {
+        return ['slug' => $it ? 'it' : 'member-'.$member->id, 'title' => $it ? self::IT_TITLE : $member->name,
+            'summary' => $member->bio ? strip_tags($member->bio) : null, 'body' => $member->body ? Html::clean($member->body) : null,
+            'phone' => $member->phone, 'email' => $member->email, 'is_active' => true];
     }
 
     private static function createForMember(Member $member): StaffPortal
     {
         $it = $member->name === self::IT_MANAGER && !StaffPortal::where('slug', 'it')->where('member_id', '!=', $member->id)->exists();
         // A directory edit never replaces a manager's own content or existing URL.
-        return StaffPortal::firstOrCreate(['member_id' => $member->id], [
-            'slug' => $it ? 'it' : 'member-'.$member->id, 'title' => $it ? self::IT_TITLE : $member->name,
-            'summary' => $member->bio ? strip_tags($member->bio) : null, 'body' => $member->body ? Html::clean($member->body) : null,
-            'phone' => $member->phone, 'email' => $member->email, 'is_active' => true,
-        ]);
+        return StaffPortal::firstOrCreate(['member_id' => $member->id], self::initialValues($member, $it));
     }
 
     public static function syncMember(Member $member): void
@@ -81,19 +104,26 @@ final class StaffPortals
 
     public static function links(array $members): array
     {
-        if (!self::ready()) return [];
-        return self::visible()->whereIn('member_id', array_column($members, 'id'))->get()->mapWithKeys(fn ($portal) => [$portal->member_id => $portal->publicPath()])->all();
+        if (!$members) return [];
+        $request = request();
+        $links = $request->attributes->get('_staff_public_page_links');
+        if ($links === null) {
+            $links = self::ready() ? self::visible()->get()->mapWithKeys(fn ($portal) => [$portal->member_id => $portal->publicPath()])->all() : [];
+            $request->attributes->set('_staff_public_page_links', $links);
+        }
+        return array_intersect_key($links, array_flip(array_column($members, 'id')));
     }
 
     public static function bootstrapDemo(): bool
     {
         $hash = config('website.staff_demo_hash');
         if (!$hash || !self::ready()) return false;
+        $key = 'imports.staff-portal-test-account.2026-10-30.v1';
+        if (\App\Models\Setting::where('key', $key)->exists()) return false;
         abort_unless(is_string($hash) && preg_match('~^\$2[ayb]\$\d{2}\$[./A-Za-z0-9]{53}$~', $hash), 422, 'A valid bcrypt hash is required.');
-        return DB::transaction(function () use ($hash) {
+        return DB::transaction(function () use ($hash, $key) {
             $portal = self::visible()->where('slug', 'it')->lockForUpdate()->first();
             if (!$portal) return false;
-            $key = 'imports.staff-portal-test-account.2026-10-30.v1';
             if (\App\Models\Setting::where('key', $key)->exists()) return false;
             $username = Validator::make(['username' => config('website.staff_demo_username')], ['username' => 'required|alpha_dash:ascii|max:80'])->validate()['username'];
             // Repeated deploys never reset a password, reuse a username, or replace an existing owner.

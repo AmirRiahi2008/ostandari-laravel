@@ -193,4 +193,22 @@ final class StaffPortalsTest extends TestCase
         $this->it->member->update(['is_active' => true]);
         $this->get('/staff-admin/it')->assertOk();
     }
+
+    public function test_cold_start_skips_the_completed_import_and_manual_resync_handles_database_imports(): void
+    {
+        $this->assertTrue(StaffPortals::synchronized());
+        $before = StaffPortal::count();
+        \Illuminate\Support\Facades\DB::connection()->enableQueryLog();
+        $this->assertSame(0, StaffPortals::sync());
+        $queries = \Illuminate\Support\Facades\DB::getQueryLog();
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+        $this->assertFalse(collect($queries)->contains(fn($q)=>str_contains($q['query'],'from `members`')));
+        $id = \Illuminate\Support\Facades\DB::table('members')->insertGetId(['name'=>'مدیر واردشده با پایگاه داده', 'position'=>'مدیر واحد', 'kind'=>'manager','locale'=>'fa',
+            'organization_id'=>$this->it->member->organization_id,'category_id'=>$this->it->member->category_id,'is_active'=>true,'created_at'=>now(),'updated_at'=>now()]);
+        $this->assertSame(0, StaffPortals::sync());
+        $this->assertSame(1, StaffPortals::sync(true));
+        $this->assertSame($before + 1, StaffPortal::count());
+        $this->assertDatabaseHas('staff_portals',['member_id'=>$id]);
+        $this->assertFalse(Setting::where('key',StaffPortals::SYNC_KEY)->firstOrFail()->is_public);
+    }
 }
