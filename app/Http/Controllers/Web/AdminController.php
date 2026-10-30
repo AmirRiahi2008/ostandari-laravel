@@ -41,6 +41,9 @@ final class AdminController
         $available=[...$meta['modules'], ...ServiceAgreementPages::modules(), \App\Services\CustomPages::module()];
         if($context['type']==='county')$available[]=['path'=>'/panel/admin/portal','title'=>'ظاهر و اطلاعات پرتال','description'=>'معرفی شهرستان، تصاویر، اطلاعات تماس، منوها و نمایش بخش‌ها','section'=>'appearance','resource'=>'','permission'=>'organizations.manage','showInNavigation'=>true,'canCreate'=>false,'canEdit'=>true];
         $module=collect($available)->firstWhere('path',$modulePath);
+        if ($modulePath === '/panel/admin/governors' && $module) {
+            array_splice($module['columns'], 4, 0, [['key' => 'term_period', 'label' => 'دوره تصدی (شمسی)']]);
+        }
         if($module) abort_unless($ui->moduleAllowed($module,$user),403);
         if ($modulePath === '/panel/admin/custom-pages') $context['can_write'] = true;
         if (isset($module['service_agreement'])) {

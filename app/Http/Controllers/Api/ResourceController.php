@@ -75,6 +75,7 @@ class ResourceController
             });
         }
 
+        if ($resource === 'members' && $r->query('kind') === 'governor') \App\Services\GovernorTerms::order($q);
         return Api::page($q->orderByDesc('id')->paginate((int) $r->input('per_page', 20)));
     }
 

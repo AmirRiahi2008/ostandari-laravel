@@ -199,7 +199,9 @@ class PublicController
                 }
             });
         }
-        if (isset($def['rules']['priority'])) {
+        if ($resource === 'members' && $r->input('kind') === 'governor') {
+            \App\Services\GovernorTerms::order($q);
+        } elseif (isset($def['rules']['priority'])) {
             $q->orderBy('priority');
         }
 

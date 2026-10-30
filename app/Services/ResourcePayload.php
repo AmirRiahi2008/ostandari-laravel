@@ -37,6 +37,12 @@ class ResourcePayload
         $creating = ! $model;
         $class = $def['model'];
         $sample = $model ?? new $class;
+        if ($sample instanceof Member) foreach (['term_start_year', 'term_end_year'] as $field) {
+            if (isset($input[$field]) && is_string($input[$field])) {
+                $value = trim(GovernorTerms::digits($input[$field]));
+                $input[$field] = $value === '' ? null : $value;
+            }
+        }
         if ($creating && ($def['tenant'] ?? false)) $input['organization_id'] ??= $actor->organization_id;
         if ($creating && $sample instanceof Member && ! $actor->hasGlobalAccess() && $actor->organization?->county_id) $input['county_id'] ??= $actor->organization->county_id;
         foreach ($def['scope'] ?? [] as $key => $value) {
@@ -122,6 +128,8 @@ class ResourcePayload
             }
         }
         if ($sample instanceof Member) {
+            $data = GovernorTerms::payload($data, $model);
+            $effective = array_merge($model?->getAttributes() ?? [], $data);
             CurrentGovernor::validate($data, $actor, $model);
         }
         foreach (['starts_at' => 'ends_at', 'published_at' => 'expires_at', 'opens_at' => 'closes_at', 'term_start' => 'term_end'] as $start => $end) {

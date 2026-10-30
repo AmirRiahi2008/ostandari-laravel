@@ -19,6 +19,7 @@
         </div>
         <div class="portal-member-identity"><h3>{{ $person['name'] }}</h3><p class="portal-member-position">{{ $person['position'] ?? '' }}</p></div>
     </header>
+    @if(($person['kind']??'')==='governor' && !empty($person['term_period']))<p class="portal-governor-term"><span>دوره تصدی</span><bdi>{{ $person['term_period'] }}</bdi></p>@endif
     @if($memberOrganization && $memberOrganization!==($person['position']??''))<p class="portal-member-organization">{{ $memberOrganization }}</p>@endif
     @if($memberProfile)
         @if(!empty($person['bio']))<p class="portal-member-bio">{{ $ui->text($person['bio']) }}</p>@endif

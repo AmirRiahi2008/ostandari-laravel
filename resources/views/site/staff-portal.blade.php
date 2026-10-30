@@ -3,8 +3,7 @@
     $portrait=$portal->portrait?->url ?: $ui->image($manager->toArray());
 @endphp
 <section class="staff-public staff-public-revised" aria-label="صفحه شخصی {{ $manager->name }}">
-    @if(!$staffItem && !$staffPage)@include('site.staff-slider')@endif
-    <div class="staff-public-layout">
+    <div class="staff-public-layout {{ !$staffItem && !$staffPage?'staff-home-grid':'' }}">
         <div class="staff-public-content">
             @if($staffPage)
                 <article class="staff-public-card staff-article staff-custom-page"><a class="staff-back" href="{{ $portal->publicPath() }}">صفحه اصلی <span aria-hidden="true">←</span></a><h1>{{ $staffPage->title }}</h1><div class="portal-article-body">{!! \App\Services\Html::articleBody($staffPage->body ?? '') !!}</div></article>
@@ -19,6 +18,7 @@
                 @endif
             @endif
         </div>
+        @if(!$staffItem && !$staffPage)@include('site.staff-slider')@endif
         <aside class="staff-public-profile">
             <section class="staff-public-card staff-manager-card"><div class="staff-manager-photo" x-data="{failed:false}">@if($portrait)<img src="{{ $portrait }}" alt="{{ $manager->name }}" x-show="!failed" x-on:error="failed=true" x-init="failed=$el.complete && !$el.naturalWidth">@endif<span @if($portrait)x-show="failed" x-cloak @endif class="staff-avatar" aria-hidden="true">@include('icons.people')</span></div><h2>{{ $manager->name }}</h2><p>{{ $portal->title }}</p>@if($portal->email)<a class="staff-direct-contact" href="mailto:{{ $portal->email }}">ارتباط مستقیم</a>@elseif($portal->phone)<a class="staff-direct-contact" href="tel:{{ preg_replace('/[^+0-9]/','',$portal->phone) }}">ارتباط مستقیم</a>@endif</section>
             @if($staffLinks->isNotEmpty())<section class="staff-public-card"><h2>پیوندها</h2><ul class="staff-links-list">@foreach($staffLinks as $link)<li><a href="{{ $link->url }}" target="_blank" rel="noopener noreferrer">@if($link->asset)<img src="{{ $link->asset->url }}" alt="" loading="lazy">@endif<span>{{ $link->title }}</span><span aria-hidden="true">↗</span></a></li>@endforeach</ul></section>@endif

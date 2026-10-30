@@ -22,7 +22,7 @@
 /* Staff pages have their own navigation; province and county headers are unchanged. */
 .staff-site-header .staff-site-navbar{position:relative;z-index:22;min-height:70px;background:#fff;border:1px solid #dfebee;border-radius:16px;box-shadow:0 6px 22px #183f5810;color:#13445b}
 .staff-site-header .staff-site-navigation{display:grid;grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr);align-items:center;min-height:70px;padding:0 24px}
-.staff-site-header .staff-nav-group{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 12px;min-width:0;padding:10px 0}
+.staff-site-header .staff-nav-group{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:4px 12px;min-width:0;padding:10px 0}
 .staff-site-header .staff-nav-group>a{padding:10px 13px;border-radius:9px;font-size:13px;line-height:1.8;font-weight:650;text-decoration:none;color:#234e62;max-width:100%;overflow-wrap:anywhere}
 .staff-site-header .staff-nav-group>a:hover,.staff-site-header .staff-nav-group>a[aria-current]{color:#087571;background:#eaf6f3}
 .staff-site-header .staff-site-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;width:116px;height:116px;z-index:30}
@@ -75,3 +75,28 @@
 @media(max-width:1000px){.staff-public-revised .staff-public-layout{grid-template-columns:minmax(0,1fr) 240px;gap:20px}.staff-public-revised .staff-media-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.staff-public-revised .staff-public-card{padding:20px}.staff-site-header .staff-site-navigation{padding:0 16px}.staff-site-header .staff-nav-group{gap:4px}.staff-site-header .staff-nav-group>a{font-size:12px;padding:9px}}
 @media(max-width:760px){.staff-site-header .staff-site-navbar{min-height:68px;border-radius:13px}.staff-site-header .staff-site-navigation{display:none}.staff-site-header .header-hamburger{display:flex;position:absolute;right:18px;top:20px;margin:0}.staff-site-header .staff-site-logo{width:94px;height:94px}.staff-site-header .staff-site-logo img{width:62px;height:67px}.staff-public-revised .staff-public-layout{display:flex;flex-direction:column;gap:0}.staff-public-revised .staff-public-content{order:0;width:100%}.staff-public-revised .staff-public-profile{order:1;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px}.staff-public-revised .staff-manager-card{grid-column:1/-1}.staff-public-revised .staff-manager-photo{height:126px}.staff-public-revised .staff-public-tabs a{font-size:13px;padding:10px 8px}.staff-public-revised .staff-media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.staff-public-revised .staff-media-section{padding:18px;margin-top:24px}.staff-public-revised .staff-media-section>header{margin-bottom:18px}.staff-public-revised .staff-media-section h2{font-size:17px}.staff-slide-stage{aspect-ratio:16/10;min-height:225px}.staff-slide-caption{padding:55px 25px 48px}.staff-slide-caption>span{font-size:10px}.staff-slide-caption h1{font-size:17px}.staff-slide-arrow{width:32px;height:40px;top:40%}.staff-slide-previous{right:10px}.staff-slide-next{left:10px}.staff-slideshow{margin-bottom:22px;border-radius:14px}.staff-slide-controls{bottom:13px}.staff-public-revised .staff-gallery-item h3{font-size:12px;padding:11px}.staff-public-revised .staff-custom-page{padding:20px}}
 @media(max-width:420px){.staff-public-revised .staff-public-profile{display:block}.staff-public-revised .staff-public-tabs{gap:3px;padding:5px}.staff-public-revised .staff-public-tabs a{font-size:12px}.staff-public-revised .staff-media-grid{gap:10px}}
+
+/* Use the same three columns and 440px slideshow as the provincial homepage. */
+.staff-public-revised .staff-home-grid{grid-template-columns:minmax(0,1.4fr) minmax(0,2fr) minmax(200px,.9fr);gap:18px}
+.staff-home-grid>.staff-public-content{height:440px;display:flex;flex-direction:column;min-width:0}
+.staff-home-grid>.staff-public-content>.staff-public-card{flex:1;min-height:0;overflow:auto;margin:0;padding:18px}
+.staff-home-grid .staff-public-tabs{flex:none;margin-bottom:12px;gap:3px;padding:5px}
+.staff-home-grid .staff-public-tabs a{font-size:12px;padding:10px 5px}
+.staff-home-grid .staff-news-card{grid-template-columns:76px minmax(0,1fr);gap:12px;padding-block:14px}
+.staff-home-grid .staff-news-image{width:76px;height:90px}.staff-home-grid .staff-news-card h3{font-size:13px}
+.staff-home-grid>.staff-slideshow{width:100%;height:440px;margin:0;border-radius:15px;min-width:0}
+.staff-home-grid .staff-slide-stage{height:100%;min-height:0;max-height:none;aspect-ratio:auto}
+.staff-home-grid .staff-slide-caption{padding:55px 24px 52px}.staff-home-grid .staff-slide-caption h1{font-size:17px}
+.staff-home-grid .staff-slide-caption>span{display:none}
+.staff-home-grid .staff-slide-arrow{width:32px;height:40px}.staff-home-grid .staff-slide-previous{right:10px}.staff-home-grid .staff-slide-next{left:10px}
+.staff-home-grid .staff-manager-card{height:440px;margin-bottom:0;padding:20px 16px}.staff-home-grid .staff-manager-photo{height:255px}
+@media(max-width:1180px) and (min-width:761px){.staff-public-revised .staff-home-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}.staff-home-grid>.staff-public-profile{grid-column:1/-1}.staff-home-grid .staff-manager-card{display:grid;grid-template-columns:120px minmax(0,1fr);text-align:start;align-items:center;gap:5px 20px;height:auto}.staff-home-grid .staff-manager-photo{grid-row:1/span 3;height:126px;margin:0}.staff-home-grid .staff-manager-card h2{margin:0}.staff-home-grid .staff-direct-contact{justify-self:start}}
+@media(max-width:760px){.staff-public-revised .staff-home-grid{display:flex;gap:0}.staff-home-grid>.staff-slideshow{order:-1;height:auto;aspect-ratio:1280/522;margin-bottom:22px;flex:none}.staff-home-grid .staff-slide-stage{height:100%;min-height:0;aspect-ratio:auto}.staff-home-grid .staff-slide-caption{padding:25px 48px 35px}.staff-home-grid .staff-slide-caption h1{font-size:13px;-webkit-line-clamp:1}.staff-home-grid .staff-slide-controls{bottom:7px}.staff-home-grid .staff-slide-pause{width:22px;height:22px}.staff-home-grid>.staff-public-content{height:440px;margin-bottom:22px}.staff-home-grid .staff-manager-card{height:auto}.staff-home-grid .staff-manager-photo{height:126px}.staff-home-grid .staff-slide-arrow{top:50%}}
+.portal-governor-term{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 0;padding:10px 13px;border:1px solid #d4e6e8;border-radius:9px;background:#eff8f7;color:#156b71;font-size:13px;line-height:1.8}
+.portal-governor-term>span{font-size:11px;color:#5b7986}.portal-governor-term bdi{font-weight:750;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+[data-section=admin] .portal-governor-term-fields{display:block;border:1px solid #d6e5e8;border-radius:12px;padding:20px;margin:8px 0 18px;min-width:0}
+[data-section=admin] .portal-governor-term-fields legend{font-size:14px;font-weight:750;padding:0 8px;color:#155f72}
+[data-section=admin] .portal-governor-term-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media(max-width:600px){[data-section=admin] .portal-governor-term-inputs{grid-template-columns:minmax(0,1fr);gap:14px}}
+
+[data-section=admin] .education-table:has(th[data-column="term_period"]) td:nth-child(5){direction:ltr;unicode-bidi:isolate;white-space:nowrap;text-align:center}
