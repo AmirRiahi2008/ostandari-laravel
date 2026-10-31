@@ -1,5 +1,6 @@
 #!/bin/sh
 # Run additive setup commands, never legacy schema replacements or full seeds.
+(php artisan portal:prepare-private-files --no-interaction >&2 || echo 'Private-file setup did not complete; existing attachments were preserved.' >&2) &
 (php artisan portal:prepare-public-images --no-interaction >&2 || echo 'Public-image setup did not complete; existing files were preserved.' >&2) &
 (php artisan portal:prepare-governor-terms --no-interaction >&2 || echo 'Governor term date setup did not complete; existing dates were preserved.' >&2) &
 (php artisan portal:prepare-staff-portals --no-interaction >&2 || echo 'Staff page setup did not complete; existing portal data was preserved.' >&2) &

@@ -8,6 +8,7 @@ use App\Services\Audit;
 use App\Services\FileAccess;
 use App\Services\MediaUploadPreparer;
 use App\Services\PublicImages;
+use App\Services\PrivateFiles;
 use App\Support\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,17 +55,20 @@ class MediaController
         $stream = null;
         try {
             $persistent = $disk === 'public' && in_array($upload->mime, PublicImages::MIMES, true);
+            $private = $disk === 'local' && $d['visibility'] === 'private';
             if ($persistent) PublicImages::assertReady();
+            if ($private) PrivateFiles::assertReady();
             $stream = fopen($upload->path, 'rb');
             abort_if($stream === false, 503, 'خواندن فایل آپلودشده ممکن نیست.');
             abort_unless(Storage::disk($disk)->put($filePath, $stream), 503, 'ذخیره فایل انجام نشد. دوباره تلاش کنید.');
-            $media = DB::transaction(function () use ($r, $disk, $filePath, $upload, $d, $persistent) {
+            $media = DB::transaction(function () use ($r, $disk, $filePath, $upload, $d, $persistent, $private) {
                 $media = Media::create(['user_id' => $r->user()->id, 'organization_id' => $r->user()->organization_id, 'disk' => $disk, 'path' => $filePath, 'original_name' => $upload->name,
                     'mime' => $upload->mime, 'size' => $upload->size, 'visibility' => $d['visibility'], 'alt' => $d['alt'] ?? null, 'width' => $upload->width, 'height' => $upload->height]);
-                if ($persistent) {
+                if ($persistent || $private) {
                     $bytes = file_get_contents($upload->path);
                     abort_if($bytes === false, 503, 'خواندن فایل آپلودشده ممکن نیست.');
-                    PublicImages::save($media, $bytes);
+                    if ($persistent) PublicImages::save($media, $bytes);
+                    if ($private) PrivateFiles::save($media, $bytes);
                 }
                 return $media;
             });
@@ -86,6 +90,12 @@ class MediaController
     {
         $m = Media::findOrFail($id);
         abort_unless(FileAccess::mayRead($m, $r->user()), 404);
+        if (PrivateFiles::supports($m)) {
+            $bytes = PrivateFiles::read($m);
+            abort_if($bytes === null, 404);
+            return response()->streamDownload(fn()=>print($bytes), $m->original_name,
+                ['Content-Type'=>$m->mime, 'X-Content-Type-Options'=>'nosniff', 'Cache-Control'=>'private, no-store']);
+        }
         if ($m->disk === 'page-assets') return response()->streamDownload(fn()=>print(\App\Services\PageImages::bytes($m)), $m->original_name, ['Content-Type'=>$m->mime,'X-Content-Type-Options'=>'nosniff']);
         if (PublicImages::supports($m)) {
             $bytes = PublicImages::read($m);
