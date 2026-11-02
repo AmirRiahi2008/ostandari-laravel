@@ -365,8 +365,10 @@
 .portal-county-intro .county-home-slideshow{min-width:0;min-height:0;height:440px;margin:0}
 .portal-county-intro .portal-carousel{width:100%;height:100%;min-height:0;border-radius:18px;background:radial-gradient(ellipse at 35% 10%,#16698a,transparent 70%),#113c65}
 .portal-county-intro .swiper-wrapper,.portal-county-intro .swiper-slide,.portal-county-intro .source-slide-link{height:100%;min-height:0}
-.portal-county-intro .source-slide-link{display:flex;align-items:center;justify-content:center;max-height:none}
-.portal-county-intro .portal-county-photo{width:100%;height:100%;max-height:none;aspect-ratio:auto;margin:0 auto;overflow:hidden;border-radius:0}
+.portal-county-intro .source-slide-link{display:flex;align-items:center;justify-content:center;max-height:none;container-type:size}
+/* Size the fallback artwork as one 3:2 frame so its city nameplate stays on
+   the image rather than shifting into the letterboxing on compact screens. */
+.portal-county-intro .portal-county-photo{width:min(100cqw,150cqh);height:auto;max-height:100%;aspect-ratio:3/2;margin:0 auto;overflow:hidden;border-radius:0}
 .portal-county-intro .portal-county-photo>img{display:block;width:100%;height:100%;object-fit:contain}
 [data-section='site'] .portal-county-home .portal-county-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;max-height:none;overflow:visible;padding:0}
 .portal-county-home .portal-content-card h3{font-size:13px}
