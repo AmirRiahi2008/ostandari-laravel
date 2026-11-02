@@ -357,17 +357,22 @@
 .portal-carousel-arrow.is-previous{right:12px}.portal-carousel-arrow.is-next{left:12px}
 .portal-carousel-arrow>svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .portal-carousel-arrow:disabled{opacity:.4;cursor:default}
-.portal-county-intro{display:grid;grid-template-columns:minmax(0,1fr);gap:23px;margin-block:10px 25px}
-.portal-county-intro.with-governor{grid-template-columns:minmax(0,1fr) 280px}
-.portal-county-intro .county-home-slideshow{min-width:0;min-height:350px;margin:0}
-.portal-county-intro .portal-carousel{width:100%;height:100%;min-height:350px;border-radius:18px;background:radial-gradient(ellipse at 35% 10%,#16698a,transparent 70%),#113c65}
-.portal-county-intro .swiper-wrapper,.portal-county-intro .swiper-slide,.portal-county-intro .source-slide-link{height:100%;min-height:350px}
-.portal-county-intro .source-slide-link{display:flex;align-items:center;justify-content:center;max-height:480px}
-.portal-county-intro .portal-county-photo{width:min(100%,660px);max-height:440px;aspect-ratio:3/2;margin:0 auto;overflow:hidden;border-radius:0}
+/* Match the provincial homepage's 2 / 4.3 slideshow column and 440px height.
+   Keep the compact slideshow centered even when no governor card is enabled. */
+.portal-county-intro{display:grid;grid-template-columns:minmax(0,calc((100% - 36px)/2.15));justify-content:center;align-items:stretch;gap:18px;margin-block:10px 25px}
+.portal-county-intro.with-governor{grid-template-columns:minmax(0,calc((100% - 36px)/2.15)) minmax(200px,calc((100% - 36px)/4.77777778))}
+.portal-county-intro.governor-only{grid-template-columns:minmax(0,280px)}
+.portal-county-intro .county-home-slideshow{min-width:0;min-height:0;height:440px;margin:0}
+.portal-county-intro .portal-carousel{width:100%;height:100%;min-height:0;border-radius:18px;background:radial-gradient(ellipse at 35% 10%,#16698a,transparent 70%),#113c65}
+.portal-county-intro .swiper-wrapper,.portal-county-intro .swiper-slide,.portal-county-intro .source-slide-link{height:100%;min-height:0}
+.portal-county-intro .source-slide-link{display:flex;align-items:center;justify-content:center;max-height:none}
+.portal-county-intro .portal-county-photo{width:100%;height:100%;max-height:none;aspect-ratio:auto;margin:0 auto;overflow:hidden;border-radius:0}
 .portal-county-intro .portal-county-photo>img{display:block;width:100%;height:100%;object-fit:contain}
 [data-section='site'] .portal-county-home .portal-county-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;max-height:none;overflow:visible;padding:0}
 .portal-county-home .portal-content-card h3{font-size:13px}
-@media(max-width:1000px){.portal-home-information{grid-template-columns:minmax(0,1fr)}.portal-links-directory,.portal-duties-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-county-intro.with-governor{grid-template-columns:minmax(0,1fr) 240px}}
+@media(max-width:1180px) and (min-width:761px){.portal-county-intro,.portal-county-intro.with-governor{grid-template-columns:minmax(0,calc((100% - 18px)/1.625))}.portal-county-intro.governor-only{grid-template-columns:minmax(0,280px)}}
+@media(max-width:1000px){.portal-home-information{grid-template-columns:minmax(0,1fr)}.portal-links-directory,.portal-duties-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.portal-county-intro,.portal-county-intro.with-governor,.portal-county-intro.governor-only{grid-template-columns:minmax(0,1fr)}.portal-county-intro .county-home-slideshow{height:auto;aspect-ratio:1280/522}.portal-county-intro .portal-office-governor{width:100%}}
 @media(max-width:640px){
  .portal-news-feeds,.portal-useful-panel{padding:18px;border-radius:15px}
  .portal-feed-list .portal-content-card-link{grid-template-columns:90px minmax(0,1fr)}
@@ -375,8 +380,6 @@
  .portal-links-directory,.portal-duties-grid{grid-template-columns:minmax(0,1fr)}
  .portal-useful-link{padding:10px;gap:7px;font-size:10px}
  .portal-county-banner-title{font-size:clamp(7px,var(--county-title-size,3.2vw),20px);padding-bottom:5px}
- .portal-county-intro.with-governor{grid-template-columns:minmax(0,1fr)}
- .portal-county-intro .county-home-slideshow,.portal-county-intro .portal-carousel,.portal-county-intro .swiper-slide,.portal-county-intro .source-slide-link{min-height:240px}
  [data-section='site'] .portal-county-home .portal-county-card-grid{grid-template-columns:minmax(0,1fr)}
 }
 
