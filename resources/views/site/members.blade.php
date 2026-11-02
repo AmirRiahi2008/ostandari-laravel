@@ -17,10 +17,10 @@
                 <span class="portal-member-avatar" aria-hidden="true">@include('icons.people')</span>
             @endif
         </div>
-        <div class="portal-member-identity"><h3>{{ $person['name'] }}</h3><p class="portal-member-position">{{ $person['position'] ?? '' }}</p></div>
+        <div class="portal-member-identity"><h3 title="{{ $person['name'] }}">{{ $person['name'] }}</h3><p class="portal-member-position" title="{{ $person['position'] ?? '' }}">{{ $person['position'] ?? '' }}</p></div>
     </header>
     @if(($person['kind']??'')==='governor' && !empty($person['term_period']))<p class="portal-governor-term"><span>دوره تصدی</span><bdi>{{ $person['term_period'] }}</bdi></p>@endif
-    @if($memberOrganization && $memberOrganization!==($person['position']??''))<p class="portal-member-organization">{{ $memberOrganization }}</p>@endif
+    @if($memberOrganization && $memberOrganization!==($person['position']??''))<p class="portal-member-organization" title="{{ $memberOrganization }}">{{ $memberOrganization }}</p>@endif
     @if($memberProfile)
         @if(!empty($person['bio']))<p class="portal-member-bio">{{ $ui->text($person['bio']) }}</p>@endif
         @if(!empty($person['body']))<div class="portal-article-body">{!! \App\Services\Html::clean($person['body']) !!}</div>@endif
