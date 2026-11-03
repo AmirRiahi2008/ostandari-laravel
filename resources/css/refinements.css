@@ -65,6 +65,28 @@
 
 [data-section='site'] [data-alpine-header][data-portal-ui] .ai-menu-item{align-items:center;justify-content:center;flex-direction:row}
 [data-section='site'] [data-alpine-header][data-portal-ui] .ai-menu-item>.rast{height:40px;padding-inline:10px;border-radius:12px}
+[data-section='site'] .portal-assistant-notice {
+  box-sizing:border-box;position:fixed;inset:0;width:min(440px,calc(100vw - 32px));height:fit-content;
+  max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);overflow:auto;margin:auto;
+  padding:30px 28px 24px;border:1px solid #dce8ef;border-radius:20px;
+  background:#fff;color:#21465e;box-shadow:0 24px 80px #0c2f4966;text-align:center;
+  font-family:vazirmatn,sans-serif;
+}
+[data-section='site'] .portal-assistant-notice::backdrop {background:#102d477a;backdrop-filter:blur(4px)}
+[data-section='site'] .portal-assistant-notice-icon {
+  display:grid;place-items:center;width:64px;height:64px;margin:0 auto 19px;
+  border:1px solid #d5e9ed;border-radius:18px;background:#edf7f8;color:#087d87;
+}
+[data-section='site'] .portal-assistant-notice-icon>svg {display:block;width:32px;height:32px;margin:0}
+[data-section='site'] .portal-assistant-notice h2 {margin:0;color:#21465e;font:700 17px/2 vazirmatn,sans-serif}
+[data-section='site'] .portal-assistant-notice-action {margin:24px 0 0}
+[data-section='site'] .portal-assistant-notice button {
+  display:block;width:100%;min-height:46px;padding:10px 20px;border:1px solid #075b80;
+  border-radius:11px;background:#075b80;color:#fff;font:600 13px/1.8 vazirmatn,sans-serif;cursor:pointer;
+}
+[data-section='site'] .portal-assistant-notice button:hover {background:#064b69;border-color:#064b69}
+[data-section='site'] .portal-assistant-notice button:focus-visible {outline:3px solid #78bdcb;outline-offset:3px}
+body:has(.portal-assistant-notice[open]) {overflow:hidden}
 .portal-duties-directory{display:grid;gap:30px}
 .portal-duty-group>header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #dce7ed}
 .portal-duty-group>header h2{margin:0;color:#154f68;font-size:18px;line-height:1.9}

@@ -8,7 +8,8 @@
     $utility=[['تماس با ما','/contact'],['دسترسی سریع','/quick-access'],['سامانه شفافیت','/transparency'],['قوانین و مقررات','/regulations']];
     if($county && ($utilityMenu=$ui->menu($home['menus']??[],'portal-utility'))!==null)$utility=array_map(fn($item)=>[$item['title'],!empty($item['content_id'])?'/content/'.$item['content_id']:($item['url']??'/')],$utilityMenu['items']??[]);
 @endphp
-<header class="header-container" data-portal-ui="header-20261024" data-alpine-header="true" data-county-header="{{ $county['slug'] ?? '' }}" x-data="portalHeader" @keydown.escape.window="dismiss()" @click.outside="mega=false;language=false">
+<header class="header-container" data-portal-ui="header-20261024" data-alpine-header="true" data-county-header="{{ $county['slug'] ?? '' }}" x-data="portalHeader" @keydown.escape.window="dismiss()" @click.outside="mega=false;language=false"
+    @click="const link=$event.target.closest('a[href]'); if(link && link.origin===location.origin && /^\/(?:[^/]+\/)?assistant\/?$/.test(link.pathname)) { $event.preventDefault(); if(!$refs.assistantNotice.open) $refs.assistantNotice.showModal(); }">
     <a class="source-skip" href="#main-content">رفتن به محتوای صفحه</a>
     <div class="nav-bala">
         <nav class="nav-bala-right" aria-label="پیوندهای بالای سایت">@foreach($utility as [$label,$href])<a href="{{ $ui->href($href,$county) }}">{{ $label }}</a>@endforeach</nav>
@@ -65,7 +66,7 @@
                     </div>@endif
                 @endforeach
                 @if($countySections['nav_agreement']??true)<div class="menu-item"><div class="rast">@include('icons.agreement')<a href="{{ $ui->href('/service-agreement',$county) }}">توافق خدمات</a></div></div>@endif
-                @if($countySections['nav_assistant']??true)<div class="menu-item ai-menu-item"><div class="rast"><span class="ai-badge">@include('icons.ai') AI</span><a href="{{ $ui->href('/assistant',$county) }}">هوش مصنوعی سازمانی</a></div></div>@endif
+                @if($countySections['nav_assistant']??true)<div class="menu-item ai-menu-item"><div class="rast"><span class="ai-badge">@include('icons.ai') AI</span><a href="{{ $ui->href('/assistant',$county) }}" aria-haspopup="dialog" aria-controls="assistant-development-notice">هوش مصنوعی سازمانی</a></div></div>@endif
             </div>
         </nav>
         <div class="mm-backdrop" id="mmBackdrop" :class="{'active':mobile}" x-show="mobile" x-cloak @click="dismiss()"></div>
@@ -73,7 +74,15 @@
             <div class="mm-header"><img src="{{ $logo }}" class="mm-logo" alt="{{ $portalName }}"><button type="button" x-ref="closeMenu" id="closeMobileMenu" class="mm-close" aria-label="بستن منو" @click="dismiss()">×</button></div>
             @if(($countySections['nav_duties']??true)&&!collect($navigation)->contains(fn($entry)=>$local($entry['href'])==='/duties'))<a class="mm-link" href="{{ $ui->href('/duties',$county) }}">شرح وظایف واحدها</a>@endif
             @include('partials.mobile-menu',['entries'=>$navigation])
+            @if(($countySections['nav_assistant']??true)&&!collect($navigation)->contains(fn($entry)=>$local($entry['href'])==='/assistant'))<a class="mm-link" href="{{ $ui->href('/assistant',$county) }}" aria-haspopup="dialog" aria-controls="assistant-development-notice">هوش مصنوعی سازمانی</a>@endif
             <div class="mm-utility">@foreach($utility as [$label,$href])<a href="{{ $ui->href($href,$county) }}">{{ $label }}</a>@endforeach</div><div class="mm-footer"><a href="{{ $ui->href('/install',$county) }}">نصب اپلیکیشن استان یار</a><a href="/sitemap">نقشه سایت</a></div>
         </div>
     </div><div class="header-paen"><div class="marquee"><div class="marquee-content"><span>{{ $settings['site.slogan_text'] ?? 'اقتصاد مقاومتی در سایه وحدت ملی و امنیت ملی' }}</span></div></div></div></div>
+    <dialog id="assistant-development-notice" class="portal-assistant-notice" x-ref="assistantNotice" aria-labelledby="assistant-development-title" @keydown.escape.stop>
+        <div class="portal-assistant-notice-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M2 12v4m20-4v4M9 16h6"/><circle cx="9" cy="12" r=".8"/><circle cx="15" cy="12" r=".8"/></svg>
+        </div>
+        <h2 id="assistant-development-title">دستیار هوش مصنوعی سازمانی در حال توسعه است</h2>
+        <div class="portal-assistant-notice-action"><button type="button" @click="$refs.assistantNotice.close()" autofocus>متوجه شدم</button></div>
+    </dialog>
 </header>
