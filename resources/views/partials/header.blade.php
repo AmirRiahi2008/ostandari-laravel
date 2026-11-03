@@ -16,8 +16,8 @@
         <div class="nav-bala-left">
             <a class="header-install-app" href="{{ $ui->href('/install',$county) }}">@include('icons.app')<span>نصب اپلیکیشن استان یار</span></a>
             <div class="iran-container"><div class="iran-img">
-                <button type="button" id="flagSwitcher" aria-label="انتخاب زبان" :aria-expanded="language" @click="language=!language">@include('icons.iran')</button>
-                <div class="flag-dropdown" :class="{'active':language}" x-show="language" x-cloak id="flagDropdown"><a class="flag-option" href="/en" lang="en">English</a><a class="flag-option" href="/ar" lang="ar">العربية</a></div>
+                <button type="button" id="flagSwitcher" aria-label="انتخاب زبان" aria-controls="flagDropdown" :aria-expanded="language" @click="language=!language">@include('icons.iran')</button>
+                <div class="flag-dropdown" :class="{'active':language}" x-show="language" x-cloak id="flagDropdown">@include('partials.language-options')</div>
             </div><a class="search" href="{{ $ui->href('/search',$county) }}" aria-label="جستجو در سایت">@include('icons.search')</a></div>
             <div class="sabtnam-container"><div class="sabtnan"><a href="/register">ثبت‌نام شهروندان</a></div><div class="vorod"><a href="{{ auth()->check() && !auth()->user()->isStaff() ? '/citizen' : '/login' }}">{{ auth()->check() && !auth()->user()->isStaff() ? 'پنل شهروندی' : 'ورود شهروندان' }}</a></div></div>
         </div>
