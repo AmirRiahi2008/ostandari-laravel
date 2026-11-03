@@ -1,5 +1,8 @@
 @extends('layouts.base')
 @push('styles')<link rel="stylesheet" href="/styles/home-page.css">@endpush
+@if($view==='counties')
+    @push('styles')<link rel="stylesheet" href="/styles/county-directory.css">@endpush
+@endif
 @php
     $serviceRoots=[$ui->href('/services',$county),$ui->href('/service-agreement',$county)];
     $serviceNavigation=array_values(array_filter($navigation,fn($entry)=>in_array(parse_url($entry['href']??'',PHP_URL_PATH),$serviceRoots,true)));

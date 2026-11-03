@@ -149,7 +149,7 @@
 <button class="download-button" type="button" disabled="" aria-describedby="android-release-status">نسخهٔ اندروید هنوز منتشر نشده</button>
 <small id="android-release-status">پس از انتشار فایل نصب رسمی، پیوند دریافت در همین بخش فعال می‌شود.</small>
 </article>
-<article class="download-option is-web">
+<article class="download-option is-web" data-pwa-card>
 <div class="download-option-top">
 <span class="download-option-icon">
 <svg class="immg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false">
@@ -167,10 +167,12 @@
 </span>
 <span lang="en" dir="ltr">Android · iOS · Desktop</span>
 </div>
-<h2>نسخهٔ وب پرتال</h2>
+<h2>وب‌اپ اخبار استان یار</h2>
 <p>اخبار استان یار را به صفحهٔ اصلی دستگاه اضافه کنید و به بخش‌های مورد نیازتان سریع‌تر برسید.</p>
-<a class="download-button" href="#installation-guide">راهنمای افزودن به دستگاه<span aria-hidden="true">↓</span>
+<button class="download-button" type="button" data-pwa-install hidden>نصب وب‌اپ استان یار</button>
+<a class="download-button" href="#installation-guide" data-pwa-guide>راهنمای نصب وب‌اپ<span aria-hidden="true">↓</span>
 </a>
+<small role="status" data-pwa-installed hidden>وب‌اپ استان یار روی این دستگاه نصب شده است.</small>
 <a class="download-web-link" href="{{ $ui->href('/',$county) }}">استفاده از نسخهٔ وب <span aria-hidden="true">↗</span>
 </a>
 <small>برای دریافت اطلاعات تازه و استفاده از خدمات، اتصال اینترنت لازم است.</small>
@@ -215,7 +217,7 @@
 </li>
 <li>
 <span aria-hidden="true">۳</span>
-<p>نام میان‌بر را تأیید کنید و «افزودن» (Add) را بزنید. نشان پرتال در صفحهٔ اصلی قرار می‌گیرد.</p>
+<p>اگر گزینهٔ «باز کردن به‌عنوان وب‌اپ» (Open as Web App) را می‌بینید، آن را فعال کنید و «افزودن» (Add) را بزنید.</p>
 </li>
 </ol>
 </div>

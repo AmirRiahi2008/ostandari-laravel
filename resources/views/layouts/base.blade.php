@@ -19,6 +19,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $browserDocumentTitle }}</title>
     <link rel="icon" href="{{ $browserFavicon }}">
+    @if(($page['controller'] ?? null)==='site')
+        <link rel="manifest" href="/manifest.webmanifest">
+        <link rel="apple-touch-icon" href="/pwa/icon-192.png">
+        <meta name="theme-color" content="#075b80">
+        <script src="/pwa/install.js" defer></script>
+    @endif
     <meta name="description" content="{{ $description ?? 'درگاه الکترونیکی استانداری مازندران و خدمات مردمی' }}">
     <link rel="preload" as="font" type="font/woff2" href="/design/site/assets/fonts/Vazirmatn-VariableFont_wght.woff2" crossorigin="anonymous">
     @isset($page['css'])<link rel="stylesheet" href="{{ $page['css'] }}">@endisset
