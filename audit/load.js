@@ -32,6 +32,7 @@ thresholds['successful_latency{window:steady}']=['p(95)<2000'];
 thresholds['server_errors{window:steady}']=['rate<0.01'];
 export const options={
  discardResponseBodies:true,
+ noCookiesReset:mode==='sessions',
  scenarios:{load:{executor:'ramping-vus',startVUs:Math.min(vus,10),stages:[{duration:'15s',target:vus},{duration:`${hold}s`,target:vus},{duration:'10s',target:0}],gracefulRampDown:'15s',gracefulStop:'15s'}},
  thresholds,summaryTrendStats:['avg','min','med','max','p(90)','p(95)','p(99)'],
 };

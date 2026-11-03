@@ -31,12 +31,17 @@ docker image inspect grafana/k6:2.3.0 --format '{{json .RepoDigests}}' > audit-r
  while docker inspect ostandari-app >/dev/null 2>&1; do date -u +%FT%TZ; docker stats --no-stream --format '{{json .}}' ostandari-app $(docker ps -q --filter ancestor=grafana/k6:2.3.0); sleep 3; done
 ) > audit-results/container-stats.jsonl 2>&1 &
 monitor_pid=$!
+if [[ "${AUDIT_SESSION_ONLY:-0}" != 1 ]]; then
 for vu in 1 10 50 100 250 500 1000; do
  printf '{"mode":"mixed","vus":%s,"started":"%s"}\n' "$vu" "$(date -u +%FT%TZ)" >> audit-results/stages.jsonl
  docker exec ostandari-app php artisan cache:clear >/dev/null
  docker run --rm --network host --name "load-$vu" --memory=3g -e TARGET_VUS="$vu" -e MODE=mixed -v "$PWD/audit-results:/input:ro" -v "$PWD/audit-results:/output" -v "$PWD/audit/load.js:/load.js:ro" grafana/k6:2.3.0 run --quiet /load.js > "audit-results/mixed-$vu.log" 2>&1 || printf '%s\n' "$?" > "audit-results/mixed-$vu.exit"
 done
-for mode in nat writes uploads sessions; do
+modes='nat writes uploads sessions'
+else
+modes='sessions'
+fi
+for mode in $modes; do
  printf '{"mode":"%s","vus":20,"started":"%s"}\n' "$mode" "$(date -u +%FT%TZ)" >> audit-results/stages.jsonl
  docker exec ostandari-app php artisan cache:clear >/dev/null
  docker run --rm --network host --name "load-$mode" --memory=3g -e TARGET_VUS=20 -e MODE="$mode" -v "$PWD/audit-results:/input:ro" -v "$PWD/audit-results:/output" -v "$PWD/audit/load.js:/load.js:ro" grafana/k6:2.3.0 run --quiet /load.js > "audit-results/$mode-20.log" 2>&1 || printf '%s\n' "$?" > "audit-results/$mode-20.exit"
