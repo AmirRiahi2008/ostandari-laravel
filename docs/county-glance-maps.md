@@ -1,39 +1,29 @@
 # County glance maps
 
-The county home/about pages use separate, locally hosted maps in their existing
-“در یک نگاه” section. The province-wide interactive county selector is unchanged.
+The county home/about pages use the original province locator in their existing
+“در یک نگاه” section. It shows Mazandaran's county outlines and highlights the
+current county in blue. The province-wide interactive county selector is unchanged.
 
-## Source and appearance
+## Appearance and behavior
 
-- Provider: [MapToPoster JS](https://maptoposter.tarmizi.id/).
-- Standard renderer, Modern Voyager theme, zoom 12. Poster captions are disabled;
-  the existing Persian section heading identifies the county in the site's font.
-- Map data: OpenStreetMap contributors; cartography: CARTO. The export's embedded
-  credit is preserved and readable credit links appear below the map.
-- Every source export is 1300 × 630 pixels, matching the previous SVG's 650:315
-  aspect ratio. Existing width, responsive grid, `object-fit: contain`, and
-  300-pixel maximum height rules are reused without alteration.
-- WebP files are encoded losslessly. Their decoded RGB pixels are identical to
-  the downloaded PNGs. There are no live map, WebGL or provider API requests on
-  the county pages.
+- The inline SVG uses the existing county outlines from
+  `$ui->data('frontend')['counties']`.
+- The current county is selected by its slug, with its Persian name placed at
+  its existing label coordinates. No map image or third-party map service is loaded.
+- The original `0 -20 650 315` view box, blue/gray colors, responsive sizing and
+  300-pixel maximum height are preserved.
+- The existing county dashboard section switch still controls visibility.
+  No database migration or seeder is needed.
 
-The maps show each county's principal city and its surroundings. For Simorgh,
-Miandorud, Savadkuh and North Savadkuh, the selected centers are Kiakola, Surak,
-Pol-e Sefid and Shirgah respectively. These are street-map views, not an assertion
-of administrative boundaries.
+## Files
 
-## Files and maintenance
+- `resources/views/site/county-glance-map.blade.php`: the original SVG locator
+  and county caption, shared by county home/about pages.
+- `resources/data/frontend.json`: county outlines, slugs and label coordinates.
+- `resources/css/legacy/county-office.css`: existing map frame and sizing.
 
-- `public/images/county-maps/{county-slug}.webp`: all 22 local map images.
-- `resources/data/county-map-sources.json`: source queries, centers, filenames,
-  dimensions and checksums for the exports.
-- `resources/views/site/county-glance-map.blade.php`: map image and credits.
+## Previous raster exports
 
-To refresh a map, select its verified city in the provider, use the same theme,
-zoom and dimensions, set Overlay Size to None to hide duplicate captions, and
-download the PNG. Keep its attribution when losslessly encoding it as WebP and
-update its entry in the source manifest. Do not reuse another county's map.
-
-The existing county dashboard section switch still controls visibility. If a
-future county does not have a local image, the original province locator SVG
-remains available as a fallback. No database migration or seeder is needed.
+The MapToPoster exports in `public/images/county-maps/{county-slug}.webp` and
+their source/attribution manifest in `resources/data/county-map-sources.json`
+are retained as historical assets. The county locator no longer renders them.
