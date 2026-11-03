@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Category, Member, Role, Setting, StaffPortal, User};
+use App\Models\{Category, Member, Organization, Role, Setting, StaffPortal, User};
 use App\Services\{MemberDirectory, StaffPages, StaffPortals};
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\UploadedFile;
@@ -57,7 +57,8 @@ final class GovernorPersonalPortalsTest extends TestCase
         $this->assertTrue($this->governor->isGovernor());
         $this->get('/managers?group=4')->assertOk()->assertSee($this->governor->publicPath(), false)->assertSee('ورود به صفحه شخصی');
         foreach ([1, 2, 3, 4] as $group) $this->get('/managers?group='.$group)->assertOk()->assertDontSee('portal-member-contact', false);
-        $this->get($this->governor->publicPath())->assertOk()->assertSee('معرفی فرماندار')->assertSee('staff-site-navigation', false);
+        $this->get($this->governor->publicPath())->assertOk()->assertSee('معرفی فرماندار')->assertSee('staff-site-navigation', false)
+            ->assertSee('<title>'.$this->governor->member->name.' | درگاه الکترونیکی استانداری مازندران</title>', false);
         // Deputies and executive directors do not acquire a personal workspace.
         foreach ([2, 3] as $group) {
             $category = Category::where('slug', MemberDirectory::GROUPS[$group]['slug'])->firstOrFail();
@@ -166,6 +167,23 @@ final class GovernorPersonalPortalsTest extends TestCase
         $this->post($base.'/pages/'.$page->id.'/restore')->assertRedirect();
         $this->get($page->publicPath())->assertOk();
         $this->assertDatabaseMissing('contents', ['title' => 'محتوای news فرماندار']);
+    }
+
+    public function test_staff_owners_and_province_and_county_public_relations_cannot_manage_a_governors_personal_page(): void
+    {
+        $staff = StaffPortal::where('slug', 'it')->firstOrFail();
+        foreach ([StaffPortals::ROLE, 'province_public_relations', 'county_public_relations'] as $role) {
+            $organization = $role === 'county_public_relations' ? Organization::where('type', 'county')->firstOrFail() : $this->governor->member->organization;
+            $user = User::create(['username' => 'isolated_fixture_'.$role, 'name' => 'حساب آزمون', 'password' => 'Isolated-Fixture42!',
+                'role_id' => Role::where('name', $role)->value('id'), 'organization_id' => $organization->id,
+                'person_type' => 'staff', 'access_scope' => 'organization', 'is_active' => true]);
+            if ($role === StaffPortals::ROLE) $staff->update(['owner_user_id' => $user->id]);
+            $this->as($user);
+            $base = $this->governor->adminPath();
+            $this->get($base)->assertForbidden();
+            $this->post($base.'/profile', ['title' => 'تغییر غیرمجاز'])->assertForbidden();
+            $this->getJson('/web-api/v1/staff-portals/'.$this->governor->slug.'/assets')->assertForbidden();
+        }
     }
 
     public function test_tab_feeds_are_prerendered_separately_and_default_slides_have_no_automatic_name_caption(): void

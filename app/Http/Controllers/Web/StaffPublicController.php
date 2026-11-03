@@ -47,7 +47,7 @@ final class StaffPublicController
             $feeds[$kind] = $portal->items()->published()->where('kind', $kind)->with('asset')->orderBy('priority')->latest('published_at')
                 ->paginate(12, ['*'], $pageName, $legacyPage)->appends([...$request->except(['page']), 'tab' => $kind])->fragment('staff-tab-content');
         }
-        return view('site.page', ['page' => $page, 'path' => $request->getPathInfo(), 'title' => $customPage?->title ?? $item?->title ?? $portal->title,
+        return view('site.page', ['page' => $page, 'path' => $request->getPathInfo(), 'title' => $customPage?->title ?? $item?->title ?? ($portal->isGovernor() ? $portal->member->name : $portal->title),
             'county' => null, 'home' => $home, 'settings' => $home['settings'] ?? [], 'navigation' => [],
             'view' => 'staff-portal', 'portal' => $portal, 'staffItem' => $item, 'staffPage' => $customPage, 'staffTab' => $tab,
             'staffNavigation' => StaffPages::navigation($portal), 'staffSlides' => $slides, 'staffFeeds' => $feeds,
