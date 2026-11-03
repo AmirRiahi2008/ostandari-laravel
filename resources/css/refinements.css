@@ -2,6 +2,12 @@
 [data-section='site'] [data-alpine-header][data-portal-ui]{gap:0!important}
 [data-section='site'] [data-alpine-header][data-portal-ui] .imageeee{margin-block:10px!important}
 [data-section='site'] [data-alpine-header][data-portal-ui] .top-header{margin-block:0!important;overflow:visible}
+/* Hide the leadership artwork strictly below 900px, retaining room for the
+   enlarged navigation emblem between the utility bar and the menu. */
+@media(width < 900px){
+ [data-section='site'] [data-alpine-header][data-portal-ui]>[data-portal-banner]{display:none!important}
+ [data-section='site'] [data-alpine-header][data-portal-ui] .top-header{margin-block-start:18px!important}
+}
 [data-section='site'] [data-alpine-header][data-portal-ui] .header-box{height:92px;min-height:92px;overflow:visible}
 /* Every desktop dropdown joins the navigation with the same bottom corners. */
 [data-section='site'] [data-alpine-header][data-portal-ui] .header-box:is([data-mega-open='true'],:has(.source-direct-menu.is-open>.source-direct-panel)){border-end-start-radius:0;border-end-end-radius:0;box-shadow:0 4px 18px #163c7312}

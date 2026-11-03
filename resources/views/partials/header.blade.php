@@ -21,7 +21,7 @@
             <div class="sabtnam-container"><div class="sabtnan"><a href="/register">ثبت‌نام شهروندان</a></div><div class="vorod"><a href="{{ auth()->check() && !auth()->user()->isStaff() ? '/citizen' : '/login' }}">{{ auth()->check() && !auth()->user()->isStaff() ? 'پنل شهروندی' : 'ورود شهروندان' }}</a></div></div>
         </div>
     </div>
-    <div class="imageeee {{ $county ? 'county-portal-banner' : '' }}">
+    <div class="imageeee {{ $county ? 'county-portal-banner' : '' }}" data-portal-banner="true">
         @if($county)
             @include('partials.county-banner')
         @else

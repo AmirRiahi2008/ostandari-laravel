@@ -14,7 +14,7 @@
             <div class="sabtnam-container"><div class="sabtnan"><a href="/register">ثبت‌نام شهروندان</a></div><div class="vorod"><a href="{{ auth()->check() && !auth()->user()->isStaff() ? '/citizen' : '/login' }}">{{ auth()->check() && !auth()->user()->isStaff() ? 'پنل شهروندی' : 'ورود شهروندان' }}</a></div></div>
         </div>
     </div>
-    <div class="imageeee"><img class="icx-responsive-img" src="{{ $ui->image($settings['site.banner'] ?? null) ?? '/design/site/assets/image/baner.png' }}" width="1380" height="180" alt="استانداری مازندران" fetchpriority="high"><div class="shoar-sal"><img src="{{ $ui->image($settings['site.slogan'] ?? null) ?? '/design/county-banners/annual-slogan.png' }}" alt="شعار سال"></div></div>
+    <div class="imageeee" data-portal-banner="true"><img class="icx-responsive-img" src="{{ $ui->image($settings['site.banner'] ?? null) ?? '/design/site/assets/image/baner.png' }}" width="1380" height="180" alt="استانداری مازندران" fetchpriority="high"><div class="shoar-sal"><img src="{{ $ui->image($settings['site.slogan'] ?? null) ?? '/design/county-banners/annual-slogan.png' }}" alt="شعار سال"></div></div>
     <div class="top-header">
         <div class="staff-site-navbar">
             <button type="button" class="header-hamburger" id="hamburgerBtn" aria-label="باز کردن منوی مدیر" :aria-expanded="mobile" aria-controls="mobileMenu" @click="mobile=true"><span></span><span></span><span></span></button>
