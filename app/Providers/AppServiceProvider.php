@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     {
         \App\Models\Content::saved(fn ($content) => \App\Services\EventAlerts::queue($content));
         \App\Models\Member::saved(function ($member) {
-            if ($member->wasRecentlyCreated || $member->wasChanged(['category_id', 'organization_id', 'is_active']))
+            if ($member->wasRecentlyCreated || $member->wasChanged(['category_id', 'organization_id', 'kind', 'is_active']))
                 \App\Services\StaffPortals::syncMember($member);
         });
         if (

@@ -46,7 +46,7 @@ final class StaffPortalsTest extends TestCase
 
     public function test_all_staff_pages_have_public_links_and_import_is_non_destructive(): void
     {
-        $this->assertSame(24, StaffPortal::count());
+        $this->assertSame(46, StaffPortal::count());
         $this->get('/managers?group=1')->assertOk()->assertSee('/staff/it', false)->assertSee('ورود به صفحه شخصی');
         $this->get('/staff/it')->assertOk()->assertSee(StaffPortals::IT_TITLE)->assertDontSee('ورود مدیر صفحه');
         $this->it->update(['title' => 'عنوان ویرایش‌شده', 'body' => '<p>متن مدیر</p>']);
@@ -226,7 +226,7 @@ final class StaffPortalsTest extends TestCase
         $this->assertSame(1, substr_count($nav[0], '<a '));
         $this->assertStringContainsString('href="/staff/it"', $nav[0]);
         preg_match('~<nav class="staff-public-tabs".*?</nav>~s', $html, $tabs);
-        $this->assertSame(3, substr_count($tabs[0], '<a '));
+        $this->assertSame(3, substr_count($tabs[0], '<button '));
         $this->assertStringNotContainsString('gallery', $tabs[0]);
         $this->assertStringNotContainsString('video', $tabs[0]);
         $this->assertLessThan(strpos($html, 'id="staff-gallery"'), strpos($html, 'class="staff-public-tabs"'));

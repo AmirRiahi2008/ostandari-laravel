@@ -3,9 +3,9 @@
         @foreach($staffSlides as $i=>$slide)
             <div class="staff-slide" x-show="index==={{ $i }}" @if($i>0)x-cloak @endif role="group" aria-roledescription="اسلاید" aria-label="{{ $i+1 }} از {{ count($staffSlides) }}">
                 @if($slide['url'])<a class="staff-slide-image" href="{{ $slide['url'] }}" aria-label="{{ $slide['title'] }}">@else<div class="staff-slide-image">@endif
-                    <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] }}" width="1280" height="480" @if($i===0)fetchpriority="high"@else loading="lazy"@endif x-on:error.once="$el.src='/design/site/assets/image/baner.png'">
+                    <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?: 'اسلاید '.($i+1) }}" width="1280" height="480" @if($i===0)fetchpriority="high"@else loading="lazy"@endif x-on:error.once="$el.src='/design/site/assets/image/baner.png'">
                 @if($slide['url'])</a>@else</div>@endif
-                <div class="staff-slide-caption"><span>{{ $portal->title }}</span><h1>{{ $slide['title'] }}</h1></div>
+                @if($slide['caption'] && $slide['title'])<div class="staff-slide-caption"><h2>{{ $slide['title'] }}</h2></div>@endif
             </div>
         @endforeach
     </div>

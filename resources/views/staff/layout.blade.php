@@ -2,7 +2,7 @@
 @section('body')
 <div class="staff-panel font-vazirmatn" dir="rtl" data-section="staff">
     <aside class="staff-panel-sidebar"><a class="staff-panel-brand" href="{{ $portal->adminPath() }}"><img src="/design/site/assets/image/logo.png" width="44" height="48" alt="استانداری مازندران"><span>{{ $portal->member->name }}</span></a>
-        <nav aria-label="پنل مدیر ستادی">
+        <nav aria-label="پنل صفحه شخصی">
             <a href="{{ $portal->adminPath() }}" @if($tab==='profile')aria-current="page"@endif>مشخصات صفحه</a>
             <a href="{{ $portal->adminPath() }}?tab=pages" @if($tab==='pages')aria-current="page"@endif>صفحات و منو</a>
             @foreach(\App\Services\StaffPortals::KINDS as $kind=>$label)<a href="{{ $portal->adminPath() }}?tab={{ $kind }}" @if($tab===$kind)aria-current="page"@endif>{{ $label }}</a>@endforeach

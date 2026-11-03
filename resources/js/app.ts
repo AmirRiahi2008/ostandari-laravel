@@ -8,6 +8,7 @@ import {bindUi,closeOverlays} from './portal/lib/alpine/ui';
 import {citizenDemo} from './portal/features/citizen/demo';
 import {adminDestination} from './portal/lib/auth/destinations';
 import {mountHomeMotion} from './portal/features/site/home-motion';
+import {personalPortalTabs} from './portal/features/site/personal-portal-tabs';
 
 const digits=(s:unknown)=>String(s??'').replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))).replace(/[٠-٩]/g,c=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)));
 const post=(path:string,data:unknown,method='POST')=>api<any>(path,{method,body:jsonBody(data)});
@@ -20,6 +21,7 @@ const citizenDestination=()=>{
 };
 
 Alpine.data('customPages',customPages);
+Alpine.data('personalPortalTabs',personalPortalTabs);
 
 Alpine.data('staffEditor',()=>({
   abort:new AbortController(),

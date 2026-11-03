@@ -2,9 +2,9 @@
 @section('staff-body')
 @if($tab==='profile')
 <form class="staff-form" method="post" enctype="multipart/form-data" action="{{ $portal->adminPath() }}/profile" x-data="staffEditor" data-staff-portal-editor data-image-endpoint="staff-portals/{{ $portal->slug }}/assets">@csrf
-    <section class="staff-card"><h2>معرفی صفحه</h2><label for="staff-title">نام واحد یا عنوان صفحه<input id="staff-title" name="title" value="{{ old('title',$portal->title) }}" required maxlength="255"></label>
+    <section class="staff-card"><h2>معرفی صفحه</h2><label for="staff-title">عنوان صفحه<input id="staff-title" name="title" value="{{ old('title',$portal->title) }}" required maxlength="255"></label>
         <label for="staff-summary">معرفی کوتاه<textarea id="staff-summary" name="summary" rows="3" maxlength="3000">{{ old('summary',$portal->summary) }}</textarea></label>
-        <label for="staff-body">درباره واحد و شرح فعالیت‌ها</label><textarea id="staff-body" name="body" rows="12" data-rich-text="true" data-field="body">{{ old('body',$portal->body) }}</textarea>
+        <label for="staff-body">معرفی و شرح فعالیت‌ها</label><textarea id="staff-body" name="body" rows="12" data-rich-text="true" data-field="body">{{ old('body',$portal->body) }}</textarea>
     </section>
     <section class="staff-card"><h2>تصاویر صفحه</h2><div class="staff-form-grid">
         @foreach(['portrait'=>'تصویر مدیر','banner'=>'بنر صفحه'] as $field=>$label)<div><label for="staff-{{ $field }}">{{ $label }}</label>@if($portal->$field)<img class="staff-image-preview" src="{{ $portal->$field->url }}" alt="{{ $label }}">@endif

@@ -14,7 +14,7 @@ final class ImportMemberDirectory extends Command
     {
         try{
             $result=$directory->import();
-            \App\Services\StaffPortals::sync();
+            \App\Services\StaffPortals::sync(!$result['already_imported']);
             \App\Services\StaffPortals::bootstrapDemo();
             $this->info($result['already_imported']?'Directory already imported; existing edits were preserved.':
                 'Directory imported: '.$result['created'].' added, '.$result['existing'].' existing, '.$result['skipped'].' inactive/deleted records preserved.');

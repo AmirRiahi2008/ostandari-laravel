@@ -17,8 +17,8 @@
     <div class="imageeee" data-portal-banner="true"><img class="icx-responsive-img" src="{{ $ui->image($settings['site.banner'] ?? null) ?? '/design/site/assets/image/baner.png' }}" width="1380" height="180" alt="استانداری مازندران" fetchpriority="high"><div class="shoar-sal"><img src="{{ $ui->image($settings['site.slogan'] ?? null) ?? '/design/county-banners/annual-slogan.png' }}" alt="شعار سال"></div></div>
     <div class="top-header">
         <div class="staff-site-navbar">
-            <button type="button" class="header-hamburger" id="hamburgerBtn" aria-label="باز کردن منوی مدیر" :aria-expanded="mobile" aria-controls="mobileMenu" @click="mobile=true"><span></span><span></span><span></span></button>
-            <nav class="staff-site-navigation" aria-label="منوی صفحه مدیر ستادی">
+            <button type="button" class="header-hamburger" id="hamburgerBtn" aria-label="باز کردن منوی صفحه شخصی" :aria-expanded="mobile" aria-controls="mobileMenu" @click="mobile=true"><span></span><span></span><span></span></button>
+            <nav class="staff-site-navigation" aria-label="منوی صفحه شخصی">
                 <div class="staff-nav-group">@foreach($staffNav->take($navSplit) as $entry)<a href="{{ $entry['href'] }}" @if($entry['active'])aria-current="page"@endif>{{ $entry['title'] }}</a>@endforeach</div>
                 <span class="staff-nav-logo-space" aria-hidden="true"></span>
                 <div class="staff-nav-group">@foreach($staffNav->skip($navSplit) as $entry)<a href="{{ $entry['href'] }}" @if($entry['active'])aria-current="page"@endif>{{ $entry['title'] }}</a>@endforeach</div>
@@ -26,7 +26,7 @@
             <a class="staff-site-logo" href="{{ $portal->publicPath() }}" aria-label="صفحه اصلی {{ $portal->title }}"><img src="{{ $logo }}" width="76" height="82" alt="استانداری مازندران"></a>
         </div>
         <div class="mm-backdrop" :class="{'active':mobile}" x-show="mobile" x-cloak @click="dismiss()"></div>
-        <div class="mobile-menu-overlay active" id="mobileMenu" role="dialog" aria-modal="true" aria-label="منوی صفحه مدیر ستادی" x-ref="drawer" x-show="mobile" x-cloak @keydown.tab="trap($event)">
+        <div class="mobile-menu-overlay active" id="mobileMenu" role="dialog" aria-modal="true" aria-label="منوی صفحه شخصی" x-ref="drawer" x-show="mobile" x-cloak @keydown.tab="trap($event)">
             <div class="mm-header"><img src="{{ $logo }}" class="mm-logo" alt="استانداری مازندران"><button type="button" x-ref="closeMenu" class="mm-close" aria-label="بستن منو" @click="dismiss()">×</button></div>
             @foreach($staffNav as $entry)<a class="mm-link" href="{{ $entry['href'] }}" @if($entry['active'])aria-current="page"@endif>{{ $entry['title'] }}</a>@endforeach
         </div>

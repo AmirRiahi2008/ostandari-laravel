@@ -15,6 +15,7 @@ final class StaffPortal extends Model
     public function assets() { return $this->hasMany(StaffPortalAsset::class); }
     public function portrait() { return $this->belongsTo(StaffPortalAsset::class, 'portrait_id'); }
     public function banner() { return $this->belongsTo(StaffPortalAsset::class, 'banner_id'); }
+    public function isGovernor(): bool { return $this->member?->kind === 'county_governor'; }
     public function publicPath(): string { return '/staff/'.$this->slug; }
     public function adminPath(): string { return '/staff-admin/'.$this->slug; }
 }

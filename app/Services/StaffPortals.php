@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\{DB, Schema, Validator};
 use Illuminate\Support\Str;
 use Illuminate\Validation\{Rule, ValidationException};
 
-/** Staff pages own their records independently of the province/county content tables. */
+/** Personal pages own their records independently of the province/county content tables. */
 final class StaffPortals
 {
     public const ROLE = 'staff_manager';
-    public const SYNC_KEY = 'imports.staff-portals.2026-10-30.v1';
+    public const SYNC_KEY = 'imports.personal-portals.2026-11-03.v1';
     public const KINDS = ['slide' => 'اسلایدشو', 'news' => 'اخبار', 'announcement' => 'اطلاعیه‌ها', 'gallery' => 'گالری تصاویر', 'video' => 'گالری ویدئو', 'link' => 'پیوندها'];
     public const IT_MANAGER = 'سیده معصومه سجادیان امیری';
     public const IT_TITLE = 'مدیریت فناوری اطلاعات، امنیت فضای مجازی و شبکه دولت';
@@ -24,7 +24,11 @@ final class StaffPortals
 
     public static function eligible($query)
     {
-        return $query->active()->where('locale', 'fa')->whereHas('category', fn ($q) => $q->where('slug', MemberDirectory::GROUPS['1']['slug'])->where('is_active', true))
+        return $query->active()->where('locale', 'fa')->where(function ($members) {
+            $members->whereHas('category', fn ($category) => $category->where('slug', MemberDirectory::GROUPS['1']['slug'])->where('is_active', true))
+                ->orWhere(fn ($governors) => $governors->where('kind', 'county_governor')->whereHas('category',
+                    fn ($category) => $category->where('slug', MemberDirectory::GROUPS['4']['slug'])->where('is_active', true)));
+        })
             ->whereHas('organization', fn ($q) => $q->where('type', 'governorate')->where('is_active', true));
     }
 
@@ -68,7 +72,7 @@ final class StaffPortals
             $rows = [];
             foreach ($members as $member) {
                 if (in_array($member->id, $existing, true)) continue;
-                $it = !$itTaken && $member->name === self::IT_MANAGER;
+                $it = !$itTaken && $member->kind === 'manager' && $member->name === self::IT_MANAGER;
                 if ($it) $itTaken = true;
                 $rows[] = ['member_id' => $member->id, ...self::initialValues($member, $it), 'created_at' => now(), 'updated_at' => now()];
             }
@@ -76,7 +80,8 @@ final class StaffPortals
             if ($rows) StaffPortal::insertOrIgnore($rows);
             $saved = StaffPortal::whereIn('member_id', $members->modelKeys())->pluck('member_id')->all();
             foreach ($members as $member) if (!in_array($member->id, $saved, true)) self::createForMember($member);
-            Role::firstOrCreate(['name' => self::ROLE], ['label' => 'مدیر صفحه ستادی', 'permissions' => ['staff-portal.manage'], 'is_system' => true]);
+            $role = Role::firstOrCreate(['name' => self::ROLE], ['label' => 'مدیر صفحه شخصی', 'permissions' => ['staff-portal.manage'], 'is_system' => true]);
+            if ($role->label === 'مدیر صفحه ستادی') $role->update(['label' => 'مدیر صفحه شخصی']);
             \App\Models\Setting::updateOrCreate(['key' => self::SYNC_KEY], ['value' => ['member_ids' => $members->modelKeys(), 'completed_at' => now()->toIso8601String()], 'is_public' => false]);
             return count(array_diff(StaffPortal::whereIn('member_id', $members->modelKeys())->pluck('member_id')->all(), $existing));
         });
@@ -84,14 +89,16 @@ final class StaffPortals
 
     private static function initialValues(Member $member, bool $it): array
     {
-        return ['slug' => $it ? 'it' : 'member-'.$member->id, 'title' => $it ? self::IT_TITLE : $member->name,
+        $governor = $member->kind === 'county_governor';
+        return ['slug' => $it ? 'it' : ($governor ? 'governor-' : 'member-').$member->id,
+            'title' => $it ? self::IT_TITLE : ($governor ? ($member->position ?: $member->name) : $member->name),
             'summary' => $member->bio ? strip_tags($member->bio) : null, 'body' => $member->body ? Html::clean($member->body) : null,
             'phone' => $member->phone, 'email' => $member->email, 'is_active' => true];
     }
 
     private static function createForMember(Member $member): StaffPortal
     {
-        $it = $member->name === self::IT_MANAGER && !StaffPortal::where('slug', 'it')->where('member_id', '!=', $member->id)->exists();
+        $it = $member->kind === 'manager' && $member->name === self::IT_MANAGER && !StaffPortal::where('slug', 'it')->where('member_id', '!=', $member->id)->exists();
         // A directory edit never replaces a manager's own content or existing URL.
         return StaffPortal::firstOrCreate(['member_id' => $member->id], self::initialValues($member, $it));
     }

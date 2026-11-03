@@ -581,6 +581,7 @@
 [data-section='site'] .portal-member-position{margin:6px 0 0;color:#58788c;font-size:11px;line-height:1.85;overflow-wrap:anywhere}
 [data-section='site'] .portal-member-organization{margin:14px 0 18px;color:#81939f;font-size:10px;line-height:1.9;overflow-wrap:anywhere}
 [data-section='site'] .portal-member-actions{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:8px;width:100%;margin-top:auto;padding-top:16px;border-top:1px solid #edf2f5}
+[data-section='site'] .portal-member-actions:has(>a:only-child){grid-template-columns:minmax(0,1fr)}
 [data-section='site'] .portal-member-actions>a{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:9px 8px;border:1px solid #d7e4eb;border-radius:10px;font:600 11px/1.8 vazirmatn,sans-serif;text-decoration:none;transition:background .18s,color .18s,border-color .18s}
 [data-section='site'] .portal-member-actions>.portal-member-profile{background:#075b80;border-color:#075b80;color:#fff}
 [data-section='site'] .portal-member-actions>.portal-member-profile:hover{background:#064b69;border-color:#064b69}

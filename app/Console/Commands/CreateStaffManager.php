@@ -10,8 +10,8 @@ use Illuminate\Validation\Rules\Password;
 
 final class CreateStaffManager extends Command
 {
-    protected $signature = 'portal:staff-manager {slug : Staff page slug, e.g. it} {--username= : New unique username}';
-    protected $description = 'Create an account limited to one existing staff page; enter its password at the hidden prompt.';
+    protected $signature = 'portal:staff-manager {slug : Personal page slug, e.g. it or governor-123} {--username= : New unique username}';
+    protected $description = 'Create an owner account for one staff or governor personal page; enter its password at the hidden prompt.';
     public function handle(): int
     {
         if (!StaffPortals::ready()) { $this->error('Run portal:prepare-staff-portals first.'); return self::FAILURE; }
