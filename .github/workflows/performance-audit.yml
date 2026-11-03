@@ -1,0 +1,83 @@
+name: Isolated performance audit
+on:
+  push:
+    branches: ['codex/performance-audit-20261103']
+    paths: ['audit/**', '.github/workflows/performance-audit.yml']
+permissions:
+  contents: read
+concurrency:
+  group: isolated-performance-audit
+  cancel-in-progress: true
+jobs:
+  full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-test-password
+          MYSQL_DATABASE: ostandari_testing
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h 127.0.0.1 -pdisposable-test-password" --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      APP_ENV: testing
+      DB_HOST: 127.0.0.1
+      DB_DATABASE: ostandari_testing
+      DB_USERNAME: root
+      DB_PASSWORD: disposable-test-password
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version: '8.4'
+          extensions: exif, gd, intl, mbstring, pdo_mysql, dom, xml, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - run: mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache audit-results
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: npm ci && npm test && npm run build
+      - name: Full existing feature suite
+        run: |
+          result=0
+          for test_file in tests/Feature/*Test.php; do
+            test_name="$(basename "$test_file" .php)"
+            vendor/bin/phpunit "$test_file" --log-junit "audit-results/junit-$test_name.xml" --testdox >> audit-results/regression.log 2>&1 || result=1
+          done
+          exit "$result"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: full-regression
+          path: audit-results/
+          retention-days: 7
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-load-password
+          MYSQL_DATABASE: ostandari_load_testing
+        ports: ['3306:3306']
+        options: --memory=1536m --cpus=1 --health-cmd="mysqladmin ping -h 127.0.0.1 -pdisposable-load-password" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {persist-credentials: false}
+      - name: Run isolated load levels and API smoke tests
+        run: bash audit/run.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: performance-audit
+          path: |
+            audit-results/
+            !audit-results/load-fixtures.json
+          retention-days: 7
