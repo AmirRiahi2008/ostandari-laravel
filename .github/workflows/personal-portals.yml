@@ -71,4 +71,4 @@ jobs:
       - name: Compile Blade views
         run: php artisan view:cache
       - name: Test personal ownership and existing workspaces
-        run: vendor/bin/phpunit --filter 'StaffPortalsTest|GovernorPersonalPortalsTest|MemberDirectoryTest|CountyWorkspaceTest'
+        run: vendor/bin/phpunit --filter 'StaffPortalsTest|GovernorPersonalPortalsTest|MemberDirectoryTest|CountyWorkspaceTest|LocalRuntimeTest|MediaRestoreTest|SetupEnvironmentTest'

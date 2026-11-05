@@ -11,7 +11,7 @@ if (! is_file('vendor/autoload.php')) {
     exit(1);
 }
 require 'vendor/autoload.php';
-foreach (['pdo', 'pdo_mysql', 'mbstring', 'openssl', 'fileinfo', 'xml', 'ctype'] as $extension) {
+foreach (['pdo', 'pdo_mysql', 'mbstring', 'openssl', 'fileinfo', 'xml', 'ctype', 'exif', 'gd', 'intl'] as $extension) {
     if (! extension_loaded($extension)) {
         fwrite(STDERR, "Missing PHP extension: {$extension}\n");
         exit(1);
@@ -52,11 +52,21 @@ if (! $get('APP_KEY')) {
     }
 }
 $run(['migrate', '--force']);
-$run(['db:seed', '--force']);
+// A copied deployment may contain an absolute symlink pointing at /app/storage.
+// Replace only a symlink; never delete an actual uploads directory.
+if (is_link('public/storage') && realpath('public/storage') !== realpath('storage/app/public')) {
+    unlink('public/storage');
+}
+if (is_dir('public/storage') && ! is_link('public/storage')) {
+    fwrite(STDERR, "public/storage is a real directory. Move its uploads to storage/app/public, preserve a copy, then run php artisan storage:link.\n");
+    exit(1);
+}
 if (! file_exists('public/storage')) {
     $run(['storage:link']);
 }
+$run(['portal:check']);
 echo "\nReady. Site: ".$get('APP_URL', 'http://127.0.0.1:8000')."\nAdmin login: /panel/admin/login\n";
 echo "Accounts and password hashes are read from the database. Existing credentials were not reset.\n";
+echo "No seeders or importers were run. A restored full SQL backup already includes the site's accounts and content.\n";
 echo "Import your users from SQL, or create a new administrator: php artisan portal:admin-create\n";
 echo "Start: php artisan serve\n";
